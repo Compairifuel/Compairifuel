@@ -25,7 +25,7 @@ class UserManualPage extends StatelessWidget {
                     width: MediaQuery.of(context).size.width,
                     color: const Color(0xFF000000),
                     child: const Text(
-                      'User Manual',
+                      'User manual',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Roboto',
