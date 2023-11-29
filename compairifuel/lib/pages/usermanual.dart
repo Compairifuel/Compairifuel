@@ -40,6 +40,19 @@ class UserManualPage extends StatelessWidget {
               )
             ],
           ),
+          GestureDetector(
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height / 2,
+              child: Text('This is the usermanual about compairifuel. we will explain how to use this app. please read this manual carefully. if you have any question, please contact us.',
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontFamilyFallback: <String>['RobotoSans'],
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
           Column(
             children: <Widget>[
               Row(
