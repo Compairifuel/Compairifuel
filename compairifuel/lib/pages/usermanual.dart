@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../widgets/navbar.dart';
 // import 'package:flutter/services.dart' show rootBundle;
 
 class UserManualPage extends StatelessWidget {
@@ -44,7 +46,7 @@ class UserManualPage extends StatelessWidget {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height / 2,
-              child: Text('This is the usermanual about compairifuel. we will explain how to use this app. please read this manual carefully. if you have any question, please contact us.',
+              child: const Text('This is the usermanual about compairifuel. we will explain how to use this app. please read this manual carefully. if you have any question, please contact us.',
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontFamilyFallback: <String>['RobotoSans'],
@@ -69,6 +71,7 @@ class UserManualPage extends StatelessWidget {
           )
         ],
       ),
+      bottomNavigationBar: const NavBar(),
     );
   }
 }
