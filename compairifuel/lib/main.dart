@@ -72,21 +72,23 @@ class _MyHomePageState extends State<MyHomePage> {
   int index = 0;
 
    final List<Widget> pages = [
-     UserManualPage(title: 'User manual'),
     Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Home'),
+          const Text('Map'),
         ],
       ),
     ),
-    Center(
-      child: const Text('Map'),
-    ),
-    Center(
-      child: const Text('Settings'),
-    ),
+     Center(
+       child: Column(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           const Text('Settings'),
+         ],
+       ),
+     ),
+     UserManualPage(title: 'User manual'),
   ];
 
 
@@ -98,16 +100,16 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: (int index) => setState(() => this.index = index),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'Manual',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.map),
             label: 'map',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'settings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'Manual',
           ),
         ],
       ),
