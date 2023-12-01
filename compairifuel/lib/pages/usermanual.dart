@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/navbar.dart';
-// import 'package:flutter/services.dart' show rootBundle;
-
-class UserManualPage extends StatelessWidget {
+class UserManualPage extends StatefulWidget {
   const UserManualPage({super.key, required this.title});
 
   final String title;
 
   @override
+  State<UserManualPage> createState() => _UserManualPageState();
+}
+
+class _UserManualPageState extends State<UserManualPage> {
+  int index = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    debugPrint("UserManualPage didChangeDependencies: $index");
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final PageController controller = PageController(initialPage: index);
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -42,17 +53,37 @@ class UserManualPage extends StatelessWidget {
               )
             ],
           ),
-          GestureDetector(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 2,
-              child: const Text('This is the usermanual about compairifuel. we will explain how to use this app. please read this manual carefully. if you have any question, please contact us.',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontFamilyFallback: <String>['RobotoSans'],
-                  fontSize: 18,
-                ),
-              ),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 2,
+            child: PageView(
+                controller: controller,
+                scrollDirection: Axis.horizontal,
+                children: const <Widget>[
+                  Text(
+                    'This is the usermanual about compairifuel.'
+                    ' we will explain how to use this app. please read this manual carefully.'
+                    ' if you have any question, please contact us.',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontFamilyFallback: <String>['RobotoSans'],
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    'second page of usermanual',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontFamilyFallback: <String>['RobotoSans'],
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+                onPageChanged: (int index) {
+                  setState(() {
+                    index = index;
+                  });
+                }
             ),
           ),
           Column(
@@ -64,14 +95,34 @@ class UserManualPage extends StatelessWidget {
                       width: MediaQuery.of(context).size.width,
                       color: const Color(0xFFFF0000),
                       height: 8,
-                      child: const Text(''),
+                      child: SegmentedButton(
+                          segments: <ButtonSegment>[
+                            ButtonSegment(
+                              label: Text(''),
+                                value: 0,
+                            ),
+                            ButtonSegment(
+                              label: Text(''),
+                              value: 1,
+                            ),
+                          ],
+                        selected: {index},
+                        onSelectionChanged: (newSelection) {
+                          setState(() {
+                            index = newSelection.first;
+                          });
+                          controller.animateToPage(index,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut);
+                        },
+                      ),
                     ),
                   ]),
             ],
           )
         ],
       ),
-      bottomNavigationBar: const NavBar(),
+      // bottomNavigationBar: const NavBar(),
     );
   }
 }
