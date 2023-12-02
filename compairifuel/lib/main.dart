@@ -1,4 +1,5 @@
 import 'package:compairifuel/pages/usermanual.dart';
+import 'package:compairifuel/widgets/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 
@@ -45,8 +46,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const UserManualPage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -69,32 +69,27 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int index = 0;
-  int _counter = 0;
 
    final List<Widget> pages = [
     Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('Home'),
+          const Text('Map'),
         ],
       ),
     ),
-    Center(
-      child: const Text('Map'),
-    ),
-    Center(
-      child: const Text('Settings'),
-    ),
+     Center(
+       child: Column(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           const Text('Settings'),
+         ],
+       ),
+     ),
+     UserManualPage(title: 'User manual'),
   ];
 
-  void _incrementCounter() {
-    if (index == 0) {
-      setState(() {
-        _counter++;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +100,6 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: (int index) => setState(() => this.index = index),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.map),
             label: 'map',
           ),
@@ -116,18 +107,57 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.settings),
             label: 'settings',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'Manual',
+          ),
         ],
       ),
       body: IndexedStack(
         index: index,
         children: pages,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
-
+//Image.asset("assets/images/questions.png")
+//       bottomNavigationBar: BottomNavigationBar(
+//         backgroundColor: Theme.of(context).colorScheme.surface,
+//         currentIndex: index,
+//         onTap: (int index) => setState(() => this.index = index),
+//         items: [
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.home),
+//             label: 'Home',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.map),
+//             label: 'map',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.settings),
+//             label: 'settings',
+//           ),
+//           BottomNavigationBarItem(
+//             icon: Icon(Icons.info),
+//             label: 'settings',
+//           ),
+//         ],
+//       ),
+//       body: IndexedStack(
+//         index: index,
+//         children: pages,
+//       ),
+//  List<Widget> pages = [];
+//   void changeActivePage(int index) {
+//     setState(() {
+//       currentPageIndex = index;
+//     });
+//   }
+//   @override
+//   void initState() {
+//     pages = [
+//       const UserManualPage(title: 'User manual'),
+//     ];
+//     super.initState();
+//   }
