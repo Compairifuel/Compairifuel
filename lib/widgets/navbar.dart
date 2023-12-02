@@ -11,7 +11,6 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   int currentPageIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
