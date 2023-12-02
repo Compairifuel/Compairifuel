@@ -68,7 +68,7 @@ class UserManualPage extends StatelessWidget {
                     ),
                   ]),
             ],
-          ),
+          )
         ],
       ),
       //bottomNavigationBar: const NavBar(),

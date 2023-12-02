@@ -47,7 +47,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      //home: const UserManualPage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -94,7 +93,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( bottomNavigationBar: BottomNavigationBar(
+    return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         currentIndex: index,
         onTap: (int index) => setState(() => this.index = index),
