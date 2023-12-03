@@ -47,8 +47,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const MapPage(title: 'Flutter Demo Home Page'),
+       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      //home: const MapPage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -73,14 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int index = 0;
 
    final List<Widget> pages = [
-    Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('Map'),
-        ],
-      ),
-    ),
+     MapPage(title: 'Map'),
      Center(
        child: Column(
          mainAxisAlignment: MainAxisAlignment.center,
@@ -102,15 +95,15 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: (int index) => setState(() => this.index = index),
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.map),
+            icon: Image.asset("assets/images/map.png", width: 35, height: 35),
             label: 'map',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Image.asset("assets/images/gears.png", width: 35, height: 35),
             label: 'settings',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
+            icon: Image.asset("assets/images/questions.png", width: 35, height: 35),
             label: 'Manual',
           ),
         ],
@@ -122,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-//Image.asset("assets/images/questions.png")
+
 //       bottomNavigationBar: BottomNavigationBar(
 //         backgroundColor: Theme.of(context).colorScheme.surface,
 //         currentIndex: index,
