@@ -10,17 +10,18 @@ class UserManualPage extends StatefulWidget {
 }
 
 class _UserManualPageState extends State<UserManualPage> {
-  int index = 0;
+  int _currentIndex = 0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    debugPrint("UserManualPage didChangeDependencies: $index");
+    debugPrint("UserManualPage didChangeDependencies: $_currentIndex");
   }
 
   @override
   Widget build(BuildContext context) {
-    final PageController controller = PageController(initialPage: index);
+    final PageController controller =
+        PageController(initialPage: _currentIndex);
     return Scaffold(
       body: Column(
         children: <Widget>[
@@ -81,48 +82,92 @@ class _UserManualPageState extends State<UserManualPage> {
                 ],
                 onPageChanged: (int index) {
                   setState(() {
-                    index = index;
+                    _currentIndex = index;
                   });
-                }
-            ),
+                }),
           ),
           Column(
             children: <Widget>[
               Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      color: const Color(0xFFFF0000),
-                      height: 8,
-                      child: SegmentedButton(
-                          segments: <ButtonSegment>[
-                            ButtonSegment(
-                              label: Text(''),
-                                value: 0,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: 8,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _currentIndex = 0;
+                            });
+                            controller.animateToPage(_currentIndex,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeInOut);
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: () {
+                              if (_currentIndex == 0) {
+                                return MaterialStateProperty.all<Color>(
+                                    Colors.grey);
+                              } else {
+                                return MaterialStateProperty.all<Color>(
+                                    Colors.white);
+                              }
+                            }(),
+                            shape: MaterialStateProperty.all<CircleBorder>(
+                              const CircleBorder(
+                                side: BorderSide(
+                                  color: Colors.grey,
+                                  width: 1,
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
                             ),
-                            ButtonSegment(
-                              label: Text(''),
-                              value: 1,
+                          ),
+                          child: const Text(''),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _currentIndex = 1;
+                            });
+                            controller.animateToPage(_currentIndex,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeInOut);
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: () {
+                              if (_currentIndex == 1) {
+                                return MaterialStateProperty.all<Color>(
+                                    Colors.grey);
+                              } else {
+                                return MaterialStateProperty.all<Color>(
+                                    Colors.white);
+                              }
+                            }(),
+                            shape: MaterialStateProperty.all<CircleBorder>(
+                              const CircleBorder(
+                                side: BorderSide(
+                                  color: Colors.grey,
+                                  width: 1,
+                                  style: BorderStyle.solid,
+                                ),
+                              ),
                             ),
-                          ],
-                        selected: {index},
-                        onSelectionChanged: (newSelection) {
-                          setState(() {
-                            index = newSelection.first;
-                          });
-                          controller.animateToPage(index,
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeInOut);
-                        },
-                      ),
+                          ),
+                          child: const Text(''),
+                        ),
+                      ],
                     ),
-                  ]),
+                  ),
+                ],
+              ),
             ],
           )
         ],
       ),
-      // bottomNavigationBar: const NavBar(),
     );
   }
 }
