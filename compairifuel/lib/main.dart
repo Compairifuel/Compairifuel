@@ -1,5 +1,6 @@
 import 'package:compairifuel/pages/usermanual.dart';
 import 'package:compairifuel/widgets/navbar.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:compairifuel/pages/map.dart';
