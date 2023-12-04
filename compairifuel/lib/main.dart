@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Color(0xFF004c97),
         currentIndex: index,
         onTap: (int index) => setState(() => this.index = index),
         items: [
