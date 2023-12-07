@@ -1,5 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+
+void startListeningLocationUpdates() {
+  Geolocator.getPositionStream().listen((Position position) {
+    print(position);
+
+    // Make request to TomTom Search API
+    print('TomTom API request sent');
+  });
+}
+
+Future<void> searchNearby(double latitude, double longitude) async {
+  const apiKey = 'TTkngWVhaw2tDzCPcd7EUMx7WAkY6I8x';
+  final apiUrl =
+      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=50000';
+
+  try {
+    print('TomTom API URL: $apiUrl');
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final results = response.body;
+      print('TomTom API Results: $results');
+    } else {
+      print('Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error making request to TomTom API: $e');
+  }
+}
 
 class LocationService {
   final Geolocator _geolocator = Geolocator();
@@ -25,6 +54,7 @@ class LocationService {
 
   void startListeningLocationUpdates() {
     Geolocator.getPositionStream().listen((Position position) {
+      searchNearby(position.latitude, position.longitude);
       print(position);
     });
   }
