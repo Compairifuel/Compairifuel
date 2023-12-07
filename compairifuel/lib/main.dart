@@ -2,6 +2,7 @@ import 'package:compairifuel/pages/usermanual.dart';
 import 'package:compairifuel/widgets/navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:compairifuel/pages/map.dart';
 
 void main() {
   runApp(const MyApp());
@@ -120,44 +121,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-//Image.asset("assets/images/questions.png")
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: Theme.of(context).colorScheme.surface,
-//         currentIndex: index,
-//         onTap: (int index) => setState(() => this.index = index),
-//         items: [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map),
-//             label: 'map',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.settings),
-//             label: 'settings',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.info),
-//             label: 'settings',
-//           ),
-//         ],
-//       ),
-//       body: IndexedStack(
-//         index: index,
-//         children: pages,
-//       ),
-//  List<Widget> pages = [];
-//   void changeActivePage(int index) {
-//     setState(() {
-//       currentPageIndex = index;
-//     });
-//   }
-//   @override
-//   void initState() {
-//     pages = [
-//       const UserManualPage(title: 'User manual'),
-//     ];
-//     super.initState();
-//   }
