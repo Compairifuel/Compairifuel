@@ -47,8 +47,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const MapPage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -122,44 +121,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-//Image.asset("assets/images/questions.png")
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: Theme.of(context).colorScheme.surface,
-//         currentIndex: index,
-//         onTap: (int index) => setState(() => this.index = index),
-//         items: [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map),
-//             label: 'map',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.settings),
-//             label: 'settings',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.info),
-//             label: 'settings',
-//           ),
-//         ],
-//       ),
-//       body: IndexedStack(
-//         index: index,
-//         children: pages,
-//       ),
-//  List<Widget> pages = [];
-//   void changeActivePage(int index) {
-//     setState(() {
-//       currentPageIndex = index;
-//     });
-//   }
-//   @override
-//   void initState() {
-//     pages = [
-//       const UserManualPage(title: 'User manual'),
-//     ];
-//     super.initState();
-//   }
