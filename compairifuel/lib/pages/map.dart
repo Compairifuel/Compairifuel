@@ -2,6 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
+
+void startListeningLocationUpdates() {
+  Geolocator.getPositionStream().listen((Position position) {
+    print(position);
+    // Make request to TomTom Search API
+    print('TomTom API request sent');
+  });
+}
+
+Future<void> searchNearby(double latitude, double longitude) async {
+  const apiKey = 'TTkngWVhaw2tDzCPcd7EUMx7WAkY6I8x';
+  final apiUrl =
+      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=50000';
+
+  try {
+    print('TomTom API URL: $apiUrl');
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final results = response.body;
+      print('TomTom API Results: $results');
+    } else {
+      print('Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error making request to TomTom API: $e');
+  }
+}
 
 class LocationService {
   final Geolocator _geolocator = Geolocator();
@@ -26,9 +54,11 @@ class LocationService {
   }
 
   Stream<Position> startListeningLocationUpdates() {
+    print('startListeningLocationUpdates');
     return Geolocator.getPositionStream();
   }
 }
+
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key, required this.title}) : super(key: key);
@@ -41,18 +71,35 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final LocationService _locationService = LocationService();
-  late LatLng? _userLocation;
+  Position? _currentPosition;
+  late LatLng? _userLocation = LatLng(0, 0);
   final MapController _mapController = MapController();
   // late CameraFit _cameraFit = CameraConstraint.containCenter(bounds: LatLngBounds(_userLocation!,_userLocation!);
 
   @override
   void initState() {
     super.initState();
-    _locationService.startListeningLocationUpdates().listen((Position position) {
-      setState(() {
-        _userLocation = LatLng(position.latitude, position.longitude);
+    print('initState');
 
-        if(_userLocation != null){
+    debugPrint(_locationService.startListeningLocationUpdates().toString());
+    if(_locationService.startListeningLocationUpdates().toString() == "Instance of 'Stream<Position>'") {
+      debugPrint("true");
+    } else {
+      _locationService.getCurrentLocation().then((Position position) {
+        setState(() {
+          _currentPosition = position;
+          _userLocation = LatLng(position.latitude, position.longitude);
+        });
+      });
+      debugPrint("false");
+    }
+    _locationService.startListeningLocationUpdates().listen((Position position) {
+      print("tekst");
+      setState(() {
+        _userLocation = LatLng(244, 9999);
+        // _userLocation = LatLng(position.latitude, position.longitude);
+
+        if(_userLocation != null) {
           final cameraFit = CameraFit.bounds(
             bounds: LatLngBounds(_userLocation!,_userLocation!),
             padding: const EdgeInsets.all(8.0),

@@ -48,8 +48,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      //home: const MapPage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -74,15 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int index = 0;
 
    final List<Widget> pages = [
-     MapPage(title: 'Map'),
-     Center(
-       child: Column(
-         mainAxisAlignment: MainAxisAlignment.center,
-         children: [
-           const Text('Settings'),
-         ],
-       ),
-     ),
+      MapPage(title: 'Map'),
      UserManualPage(title: 'User manual'),
   ];
 
@@ -91,22 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFF004c97),
-        currentIndex: index,
-        onTap: (int index) => setState(() => this.index = index),
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/images/map.png", width: 35, height: 35),
-            label: 'map',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/images/gears.png", width: 35, height: 35),
-            label: 'settings',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset("assets/images/questions.png", width: 35, height: 35),
-            label: 'Manual',
-          ),
+          backgroundColor: Color(0xFF004c97),
+          currentIndex: index,
+          onTap: (int index) => setState(() => this.index = index),
+          items: [
+      BottomNavigationBarItem(
+      icon: Image.asset("assets/images/map.png", width: 35, height: 35),
+      label: 'Map',
+    ),
+
+    BottomNavigationBarItem(
+    icon: Image.asset("assets/images/questions.png", width: 35, height: 35),
+    label: 'Manual',
+    )
         ],
       ),
       body: IndexedStack(
@@ -116,44 +104,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: Theme.of(context).colorScheme.surface,
-//         currentIndex: index,
-//         onTap: (int index) => setState(() => this.index = index),
-//         items: [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map),
-//             label: 'map',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.settings),
-//             label: 'settings',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.info),
-//             label: 'settings',
-//           ),
-//         ],
-//       ),
-//       body: IndexedStack(
-//         index: index,
-//         children: pages,
-//       ),
-//  List<Widget> pages = [];
-//   void changeActivePage(int index) {
-//     setState(() {
-//       currentPageIndex = index;
-//     });
-//   }
-//   @override
-//   void initState() {
-//     pages = [
-//       const UserManualPage(title: 'User manual'),
-//     ];
-//     super.initState();
-//   }
