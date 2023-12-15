@@ -57,8 +57,8 @@ class LocationService {
     print('startListeningLocationUpdates');
     return Geolocator.getPositionStream();
   }
-}
 
+}
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key, required this.title}) : super(key: key);
