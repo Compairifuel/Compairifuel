@@ -6,9 +6,6 @@ import 'package:http/http.dart' as http;
 
 void startListeningLocationUpdates() {
   Geolocator.getPositionStream().listen((Position position) {
-    print(position);
-    // Make request to TomTom Search API
-    print('TomTom API request sent');
   });
 }
 
@@ -54,7 +51,6 @@ class LocationService {
   }
 
   Stream<Position> startListeningLocationUpdates() {
-    print('startListeningLocationUpdates');
     return Geolocator.getPositionStream();
   }
 
@@ -79,22 +75,17 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    print('initState');
-
     debugPrint(_locationService.startListeningLocationUpdates().toString());
     if(_locationService.startListeningLocationUpdates().toString() == "Instance of 'Stream<Position>'") {
-      debugPrint("true");
+      _locationService.startListeningLocationUpdates();
     } else {
       _locationService.getCurrentLocation().then((Position position) {
         setState(() {
-          _currentPosition = position;
           _userLocation = LatLng(position.latitude, position.longitude);
         });
       });
-      debugPrint("false");
     }
     _locationService.startListeningLocationUpdates().listen((Position position) {
-      print("tekst");
       setState(() {
         _userLocation = LatLng(244, 9999);
         // _userLocation = LatLng(position.latitude, position.longitude);
