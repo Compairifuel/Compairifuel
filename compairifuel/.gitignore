@@ -8,6 +8,8 @@
 .buildlog/
 .history
 .svn/
+*.env
+pubspec.lock
 migrate_working_dir/
 
 # IntelliJ related
