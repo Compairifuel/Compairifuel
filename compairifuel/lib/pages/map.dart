@@ -1,31 +1,49 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
+
+Future main() async {
+  await dotenv.load(fileName: ".env");
+
+  searchNearby(51.9886174,5.4989983).then((res)=>jsonDecode(res)["results"]).then((res)=>{
+              for(var i in res){
+                print(assert(i is _JsonMap))
+                print(i is String)
+
+                print(i["poi"]["name"] +" "+ i["position"]+"\n")
+  }
+  });
+}
 
 void startListeningLocationUpdates() {
   Geolocator.getPositionStream().listen((Position position) {
   });
 }
 
-Future<void> searchNearby(double latitude, double longitude) async {
-  const apiKey = 'TTkngWVhaw2tDzCPcd7EUMx7WAkY6I8x';
+Future<String> searchNearby(double latitude, double longitude, {int radius = 50000}) async {
+  String apiKey = dotenv.get("apiKey");
   final apiUrl =
-      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=50000';
+      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311';
 
   try {
-    print('TomTom API URL: $apiUrl');
+    debugPrint('TomTom API URL: $apiUrl');
     final response = await http.get(Uri.parse(apiUrl));
     if (response.statusCode == 200) {
       final results = response.body;
-      print('TomTom API Results: $results');
+      // debugPrint('TomTom API Results: $results');
+      return results;
     } else {
-      print('Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
+      debugPrint('Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
     }
   } catch (e) {
-    print('Error making request to TomTom API: $e');
+    debugPrint('Error making request to TomTom API: $e');
   }
+  return '';
 }
 
 class LocationService {
@@ -66,9 +84,29 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+
+  // get location of gasstations by using the TomTom API function searchNearby
+  // then get only the gasstations out of the results
+  // then make a list of the gasstations and use the map function to make a marker for each gasstation.
+
+
+  // every 30 seconds execute the searchNearby function and update the list of gasstations
+
+  // searchNearby(_userLocation!.latitude, _userLocation!.longitude).then((res)=>{print(res)});
+
+  @override
+  void didUpdateWidget(covariant MapPage widget) async {
+    super.didUpdateWidget(widget);
+
+    print("didUpdateWidget");
+
+    // String res = await searchNearby(_userLocation!.latitude, _userLocation!.longitude);
+    // print(res);
+  }
+
   final LocationService _locationService = LocationService();
   Position? _currentPosition;
-  late LatLng? _userLocation = LatLng(0, 0);
+  late LatLng? _userLocation = const LatLng(0, 0);
   final MapController _mapController = MapController();
   // late CameraFit _cameraFit = CameraConstraint.containCenter(bounds: LatLngBounds(_userLocation!,_userLocation!);
 
@@ -87,8 +125,8 @@ class _MapPageState extends State<MapPage> {
     }
     _locationService.startListeningLocationUpdates().listen((Position position) {
       setState(() {
-        _userLocation = LatLng(244, 9999);
-        // _userLocation = LatLng(position.latitude, position.longitude);
+        // _userLocation = LatLng(244, 9999);
+        _userLocation = LatLng(position.latitude, position.longitude);
 
         if(_userLocation != null) {
           final cameraFit = CameraFit.bounds(
@@ -103,6 +141,13 @@ class _MapPageState extends State<MapPage> {
       });
     });
   }
+
+
+
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
