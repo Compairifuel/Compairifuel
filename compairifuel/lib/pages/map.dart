@@ -1,3 +1,6 @@
+import 'dart:core';
+import 'dart:js_util';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,36 +9,40 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'dart:async';
+import '../TomTomApi.dart' as TomTomApi;
+
+Future d() async {
+  await Future.delayed(Duration(seconds: 2));
+}
+
 
 Future main() async {
   await dotenv.load(fileName: ".env");
-
-  searchNearby(51.9886174,5.4989983).then((res)=>jsonDecode(res)["results"]).then((res)=>{
-              for(var i in res){
-                print(assert(i is _JsonMap))
-                print(i is String)
-
-                print(i["poi"]["name"] +" "+ i["position"]+"\n")
-  }
-  });
 }
 
-void startListeningLocationUpdates() {
-  Geolocator.getPositionStream().listen((Position position) {
-  });
-}
+// void startListeningLocationUpdates() {
+//   Geolocator.getPositionStream().listen((Position position) {
+//   });
+// }
 
-Future<String> searchNearby(double latitude, double longitude, {int radius = 50000}) async {
+Future<dynamic> searchNearby(double latitude, double longitude, {int radius = 50000}) async {
   String apiKey = dotenv.get("apiKey");
   final apiUrl =
       'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311';
 
   try {
     debugPrint('TomTom API URL: $apiUrl');
-    final response = await http.get(Uri.parse(apiUrl));
+    final response = await http.get(Uri.parse(apiUrl), headers: {
+      'Content-Type': 'application/json',
+    });
     if (response.statusCode == 200) {
       final results = response.body;
+      // final results = await json.encoder.convert(response.body);
       // debugPrint('TomTom API Results: $results');
+      // print(results);
+      //
+      // await json.decode(results);
       return results;
     } else {
       debugPrint('Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
@@ -43,17 +50,20 @@ Future<String> searchNearby(double latitude, double longitude, {int radius = 500
   } catch (e) {
     debugPrint('Error making request to TomTom API: $e');
   }
-  return '';
+  return {};
 }
 
 class LocationService {
   final Geolocator _geolocator = Geolocator();
+  late StreamSubscription<Position>? _locationSubscription;
 
   Future<void> checkLocationAndSendNotification() async {
     bool isLocationEnabled = await _isLocationServiceEnabled();
 
     if (!isLocationEnabled) {
-      Future.error("Location is not enabled");
+      // Handle the case where location is not enabled
+      // You might want to show a message to the user or take appropriate action
+      throw Exception("Location is not enabled");
     }
   }
 
@@ -65,13 +75,18 @@ class LocationService {
 
   Future<Position> getCurrentLocation() async {
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high,
+    );
   }
 
-  Stream<Position> startListeningLocationUpdates() {
-    return Geolocator.getPositionStream();
+  void startListeningLocationUpdates(void Function(Position) onLocationUpdate) {
+    _locationSubscription =
+        Geolocator.getPositionStream().listen(onLocationUpdate);
   }
 
+  void dispose() {
+      _locationSubscription!.cancel();
+  }
 }
 
 class MapPage extends StatefulWidget {
@@ -84,51 +99,33 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final LocationService _locationService = LocationService();
+  LatLng? _userLocation = LatLng(51.3, 5.1);
+  final MapController _mapController = MapController();
+  List<Marker>? nearbyPoiMarkers;
 
-  // get location of gasstations by using the TomTom API function searchNearby
-  // then get only the gasstations out of the results
-  // then make a list of the gasstations and use the map function to make a marker for each gasstation.
-
+  // show gasstation markers on the map
 
   // every 30 seconds execute the searchNearby function and update the list of gasstations
-
-  // searchNearby(_userLocation!.latitude, _userLocation!.longitude).then((res)=>{print(res)});
-
-  @override
-  void didUpdateWidget(covariant MapPage widget) async {
-    super.didUpdateWidget(widget);
-
-    print("didUpdateWidget");
-
-    // String res = await searchNearby(_userLocation!.latitude, _userLocation!.longitude);
-    // print(res);
-  }
-
-  final LocationService _locationService = LocationService();
-  Position? _currentPosition;
-  late LatLng? _userLocation = const LatLng(0, 0);
-  final MapController _mapController = MapController();
-  // late CameraFit _cameraFit = CameraConstraint.containCenter(bounds: LatLngBounds(_userLocation!,_userLocation!);
 
   @override
   void initState() {
     super.initState();
-    debugPrint(_locationService.startListeningLocationUpdates().toString());
-    if(_locationService.startListeningLocationUpdates().toString() == "Instance of 'Stream<Position>'") {
-      _locationService.startListeningLocationUpdates();
-    } else {
-      _locationService.getCurrentLocation().then((Position position) {
-        setState(() {
-          _userLocation = LatLng(position.latitude, position.longitude);
-        });
-      });
-    }
-    _locationService.startListeningLocationUpdates().listen((Position position) {
+
+    // Check if location services are enabled
+    _locationService.checkLocationAndSendNotification().catchError((error) {
+      // Handle the error if location services are not enabled
+      print("Location Services Error: $error");
+    });
+
+    // Start listening for location updates
+    _locationService.startListeningLocationUpdates((Position position) {
+      print("Location updated: ${position.latitude}, ${position.longitude}");
       setState(() {
-        // _userLocation = LatLng(244, 9999);
         _userLocation = LatLng(position.latitude, position.longitude);
 
-        if(_userLocation != null) {
+        if (_userLocation != null) {
+          // Your map-related code
           final cameraFit = CameraFit.bounds(
             bounds: LatLngBounds(_userLocation!,_userLocation!),
             padding: const EdgeInsets.all(8.0),
@@ -140,14 +137,9 @@ class _MapPageState extends State<MapPage> {
         }
       });
     });
+
+    fetchNearbyPoiMarkers();
   }
-
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,31 +149,6 @@ class _MapPageState extends State<MapPage> {
           mapController: _mapController,
           options: MapOptions(
             initialCenter: _userLocation!,
-            // initialCameraFit: CameraFit.bounds(
-            //   bounds: _mapController.camera.visibleBounds,
-            // ),
-            // initialZoom: 0.0,
-            // onMapReady: () {
-            //   _mapController.move(
-            //   _userLocation!,
-            //       0.0,
-            //   );
-            // },
-            // interactionOptions: InteractionOptions(
-            //   flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-            // ),
-            // initialCameraFit: CameraFit,
-            // initialCenter: _userLocation ?? const LatLng(0, 0),
-
-            // cameraConstraint: CameraConstraint.containCenter(bounds: LatLngBounds(_userLocation!,_userLocation!),
-            // ),
-
-
-            // CameraFit.bounds(
-            //   bounds: LatLngBounds(_userLocation!,_userLocation!),
-            //   padding: const EdgeInsets.all(8.0),
-            // ),
-
           ),
           children: [
               TileLayer(
@@ -192,6 +159,7 @@ class _MapPageState extends State<MapPage> {
               ),
             MarkerLayer(
               markers: [
+                ...?nearbyPoiMarkers,
                   Marker(
                     width: 40.0,
                     height: 40.0,
@@ -212,5 +180,43 @@ class _MapPageState extends State<MapPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Cleanup tasks go here
+    // For example, you might dispose of controllers or close streams
+    _locationService.dispose();
+
+    super.dispose();
+  }
+
+  void fetchNearbyPoiMarkers() async {
+    try {
+      final result = await searchNearby(51.9886174, 5.4989983);
+      final decodedResult = jsonDecode(result) as Map<String, dynamic>;
+      final autogenResult = TomTomApi.Autogenerated.fromJson(decodedResult);
+
+      setState(() {
+        nearbyPoiMarkers = autogenResult.results!.map((e) =>
+            Marker(
+              point: LatLng(e.position!.lat as double, e.position!.lon as double),
+              child: GestureDetector(
+                onTap: () {
+                  debugPrint("${e.poi?.name} tapped");
+                },
+                child: const ImageIcon(
+                  AssetImage("assets/images/location.png"),
+                  size: 24,
+                ),
+              ),
+            )).toList();
+
+        // Now you can use nearbyPoiMarkers where needed.
+      });
+    } catch (error) {
+      // Handle any errors that might occur during the asynchronous operations
+      debugPrint("Error fetching nearby POI markers: $error");
+    }
   }
 }
