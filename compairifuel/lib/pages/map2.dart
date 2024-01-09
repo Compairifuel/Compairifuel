@@ -36,7 +36,7 @@ class MapPage extends StatefulWidget {
 }
 
 Future<dynamic> searchNearby(double latitude, double longitude, {int radius = 50000}) async {
-  String apiKey = "TTkngWVhaw2tDzCPcd7EUMx7WAkY6I8x";
+  String apiKey = dotenv.get("apiKey");
   final apiUrl =
       'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311';
 
