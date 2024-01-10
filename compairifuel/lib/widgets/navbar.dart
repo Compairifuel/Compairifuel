@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../pages/usermanual.dart';
-//
+
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
 
