@@ -52,15 +52,15 @@ class Summary {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['queryType'] = this.queryType;
-    data['queryTime'] = this.queryTime;
-    data['numResults'] = this.numResults;
-    data['offset'] = this.offset;
-    data['totalResults'] = this.totalResults;
-    data['fuzzyLevel'] = this.fuzzyLevel;
-    if (this.geoBias != null) {
-      data['geoBias'] = this.geoBias!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['queryType'] = queryType;
+    data['queryTime'] = queryTime;
+    data['numResults'] = numResults;
+    data['offset'] = offset;
+    data['totalResults'] = totalResults;
+    data['fuzzyLevel'] = fuzzyLevel;
+    if (geoBias != null) {
+      data['geoBias'] = geoBias!.toJson();
     }
     return data;
   }
@@ -80,9 +80,9 @@ class GeoBias {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['lat'] = this.lat;
-    data['lon'] = this.lon;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['lat'] = lat;
+    data['lon'] = lon;
     return data;
   }
 }
@@ -135,29 +135,29 @@ class Results {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = this.type;
-    data['id'] = this.id;
-    data['score'] = this.score;
-    data['dist'] = this.dist;
-    data['info'] = this.info;
-    if (this.poi != null) {
-      data['poi'] = this.poi!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['type'] = type;
+    data['id'] = id;
+    data['score'] = score;
+    data['dist'] = dist;
+    data['info'] = info;
+    if (poi != null) {
+      data['poi'] = poi!.toJson();
     }
-    if (this.address != null) {
-      data['address'] = this.address!.toJson();
+    if (address != null) {
+      data['address'] = address!.toJson();
     }
-    if (this.position != null) {
-      data['position'] = this.position!.toJson();
+    if (position != null) {
+      data['position'] = position!.toJson();
     }
-    if (this.viewport != null) {
-      data['viewport'] = this.viewport!.toJson();
+    if (viewport != null) {
+      data['viewport'] = viewport!.toJson();
     }
-    if (this.entryPoints != null) {
-      data['entryPoints'] = this.entryPoints!.map((v) => v.toJson()).toList();
+    if (entryPoints != null) {
+      data['entryPoints'] = entryPoints!.map((v) => v.toJson()).toList();
     }
-    data['fuelTypes'] = this.fuelTypes;
-    data['vehicleTypes'] = this.vehicleTypes;
+    data['fuelTypes'] = fuelTypes;
+    data['vehicleTypes'] = vehicleTypes;
     return data;
   }
 }
@@ -199,21 +199,21 @@ class Poi {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
-    if (this.categorySet != null) {
-      data['categorySet'] = this.categorySet!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
+    if (categorySet != null) {
+      data['categorySet'] = categorySet!.map((v) => v.toJson()).toList();
     }
-    data['categories'] = this.categories;
-    if (this.classifications != null) {
+    data['categories'] = categories;
+    if (classifications != null) {
       data['classifications'] =
-          this.classifications!.map((v) => v.toJson()).toList();
+          classifications!.map((v) => v.toJson()).toList();
     }
-    data['url'] = this.url;
-    if (this.brands != null) {
-      data['brands'] = this.brands!.map((v) => v.toJson()).toList();
+    data['url'] = url;
+    if (brands != null) {
+      data['brands'] = brands!.map((v) => v.toJson()).toList();
     }
-    data['phone'] = this.phone;
+    data['phone'] = phone;
     return data;
   }
 }
@@ -230,8 +230,8 @@ class CategorySet {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
     return data;
   }
 }
@@ -252,10 +252,10 @@ class Classifications {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['code'] = this.code;
-    if (this.names != null) {
-      data['names'] = this.names!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['code'] = code;
+    if (names != null) {
+      data['names'] = names!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -275,9 +275,9 @@ class Names {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['nameLocale'] = this.nameLocale;
-    data['name'] = this.name;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['nameLocale'] = nameLocale;
+    data['name'] = name;
     return data;
   }
 }
@@ -294,8 +294,8 @@ class Brands {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['name'] = this.name;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['name'] = name;
     return data;
   }
 }
@@ -350,21 +350,21 @@ class Address {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['streetNumber'] = this.streetNumber;
-    data['streetName'] = this.streetName;
-    data['municipality'] = this.municipality;
-    data['countrySubdivision'] = this.countrySubdivision;
-    data['countrySubdivisionName'] = this.countrySubdivisionName;
-    data['countrySubdivisionCode'] = this.countrySubdivisionCode;
-    data['postalCode'] = this.postalCode;
-    data['extendedPostalCode'] = this.extendedPostalCode;
-    data['countryCode'] = this.countryCode;
-    data['country'] = this.country;
-    data['countryCodeISO3'] = this.countryCodeISO3;
-    data['freeformAddress'] = this.freeformAddress;
-    data['localName'] = this.localName;
-    data['municipalitySubdivision'] = this.municipalitySubdivision;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['streetNumber'] = streetNumber;
+    data['streetName'] = streetName;
+    data['municipality'] = municipality;
+    data['countrySubdivision'] = countrySubdivision;
+    data['countrySubdivisionName'] = countrySubdivisionName;
+    data['countrySubdivisionCode'] = countrySubdivisionCode;
+    data['postalCode'] = postalCode;
+    data['extendedPostalCode'] = extendedPostalCode;
+    data['countryCode'] = countryCode;
+    data['country'] = country;
+    data['countryCodeISO3'] = countryCodeISO3;
+    data['freeformAddress'] = freeformAddress;
+    data['localName'] = localName;
+    data['municipalitySubdivision'] = municipalitySubdivision;
     return data;
   }
 }
@@ -387,12 +387,12 @@ class Viewport {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.topLeftPoint != null) {
-      data['topLeftPoint'] = this.topLeftPoint!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (topLeftPoint != null) {
+      data['topLeftPoint'] = topLeftPoint!.toJson();
     }
-    if (this.btmRightPoint != null) {
-      data['btmRightPoint'] = this.btmRightPoint!.toJson();
+    if (btmRightPoint != null) {
+      data['btmRightPoint'] = btmRightPoint!.toJson();
     }
     return data;
   }
@@ -414,10 +414,10 @@ class EntryPoints {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['type'] = this.type;
-    if (this.position != null) {
-      data['position'] = this.position!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['type'] = type;
+    if (position != null) {
+      data['position'] = position!.toJson();
     }
     return data;
   }
