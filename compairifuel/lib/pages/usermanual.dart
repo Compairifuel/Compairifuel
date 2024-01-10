@@ -54,7 +54,7 @@ class _UserManualPageState extends State<UserManualPage> {
               )
             ],
           ),
-          Container(
+          SizedBox(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height / 2,
             child: PageView(
@@ -91,7 +91,7 @@ class _UserManualPageState extends State<UserManualPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  Container(
+                  SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: 8,
                     child: Row(
