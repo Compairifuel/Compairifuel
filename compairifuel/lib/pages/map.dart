@@ -108,6 +108,8 @@ class _MapPageState extends State<MapPage> {
       debugPrint(
           "Location updated: ${position.latitude}, ${position.longitude}");
 
+      fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
+
       setState(() {
         try {
           _userLocation = LatLng(position.latitude, position.longitude);
@@ -148,7 +150,7 @@ class _MapPageState extends State<MapPage> {
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               //https://{baseURL}/map/{versionNumber}/tile/{layer}/{style}/{zoom}/{X}/{Y}.{format}?key={Your_API_Key}
               // tileBounds: LatLngBounds(_userLocation!,_userLocation!),
               //useragend: hebben we m nog nodig?
@@ -176,6 +178,13 @@ class _MapPageState extends State<MapPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(MapPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    debugPrint("MapPage didUpdateWidget");
+    fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
   }
 
   @override
