@@ -13,12 +13,6 @@ class _UserManualPageState extends State<UserManualPage> {
   int _currentIndex = 0;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    debugPrint("UserManualPage didChangeDependencies: $_currentIndex");
-  }
-
-  @override
   Widget build(BuildContext context) {
     final PageController controller =
         PageController(initialPage: _currentIndex);
