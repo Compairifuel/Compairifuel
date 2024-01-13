@@ -211,7 +211,7 @@ class _MapPageState extends State<MapPage> {
                   debugPrint("${e.poi?.name} tapped");
                 },
                 child: const ImageIcon(
-                  AssetImage("assets/images/gas_station.png"),
+                  AssetImage("assets/images/gas_station-kopie.png"),
                   size: 24,
                 ),
               ),
