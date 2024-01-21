@@ -313,7 +313,7 @@ class _MapPageState extends State<MapPage> {
       });
     } catch (error) {
       // Handle any errors that might occur during the asynchronous operations
-      debugPrintSynchronously("Error fetching nearby POI markers: $error");
+      debugPrintSynchronously("Error fetching nearby Fuelprices: $error");
     }
   }
 }
