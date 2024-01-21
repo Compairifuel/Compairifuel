@@ -80,3 +80,4 @@ app.*.map.json
 # Windows
 **/windows/Flutter/.dart_tool/
 **/windows/Flutter/build/
+/devtools_options.yaml
