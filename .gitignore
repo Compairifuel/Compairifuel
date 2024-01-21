@@ -134,3 +134,4 @@ dist
 .idea
 .tmp
 pubspec.lock
+compairifuel/pubspec.lock
