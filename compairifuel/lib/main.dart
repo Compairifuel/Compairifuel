@@ -1,11 +1,13 @@
 import 'package:compairifuel/pages/usermanual.dart';
 import 'package:compairifuel/widgets/navbar.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:compairifuel/pages/map.dart';
 
-void main() {
+void main() async {
+  await dotenv.load();
   runApp(const MyApp());
   runApp(
     DevicePreview(
@@ -73,8 +75,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int index = 0;
 
    final List<Widget> pages = [
-      MapPage(title: 'Map'),
-     UserManualPage(title: 'User manual'),
+     const MapPage(title: 'Map'),
+     const UserManualPage(title: 'User manual'),
   ];
 
 
@@ -82,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Color(0xFF004c97),
+          backgroundColor: const Color(0xFF004c97),
           currentIndex: index,
           onTap: (int index) => setState(() => this.index = index),
           items: [
