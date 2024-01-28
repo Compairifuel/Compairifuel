@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:compairifuel/widgets/user_marker_layer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,21 +11,21 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:async';
 import '../TomTomApiSearch.dart' as TomTomApiSearch;
-import '../TomTomApiFuelPrice.dart' as TomTomApiFuelPrice;
+import '../widgets/fuel_marker_layer.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
 }
 
 Future<dynamic> searchNearby(double latitude, double longitude,
-    {int radius = 50000}) async {
+    {int radius = 25000}) async {
   String apiKey = dotenv.get("apiKey");
 
   // Electric vehicle charging stations == 7309
   // Gas stations == 7311
 
   final apiUrl =
-      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311&relatedPois=off&limit=12&countrySet=NLD,BEL,DEU&minFuzzyLevel=1&maxFuzzyLevel=4';
+      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311&relatedPois=off&limit=100&countrySet=NLD,BEL,DEU&minFuzzyLevel=2&maxFuzzyLevel=4';
   try {
     debugPrint('TomTom API URL: $apiUrl');
     final response = await http.get(Uri.parse(apiUrl), headers: {
@@ -44,17 +45,10 @@ Future<dynamic> searchNearby(double latitude, double longitude,
 }
 
 Future<dynamic> fuelPrices(String address) async {
-  // String apiKey = dotenv.get("apiKey");
-  // fuelPrice = "1:cf81fe50-6218-11ea-a677-d05099d5f839";
-  // String origin = "Rijksstraatweg 121c, 3921EJ";
-  // String destination = "Rijksstraatweg 121c, 3921EJ";
   final apiUrl =
-      // 'https://api.tomtom.com/search/2/fuelPrice.json?key=$apiKey&fuelPrice=$fuelPrice';
       'https://www.tankplanner.nl/api/v1/route/diesel/?origin=$address&destination=$address';
   try {
     debugPrint('Tankplanner API URL: ${Uri.parse(apiUrl)}');
-    // final response = await http.get(Uri.parse(apiUrl), headers: {
-
     final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/diesel/",{"origin":address,"destination":address}), headers: {
       'Content-Type': 'application/json',
       "Access-Control-Allow-Origin": "*", // Required for CORS support to work
@@ -71,29 +65,6 @@ Future<dynamic> fuelPrices(String address) async {
     debugPrint('Error making request to Tankplanner API: $e');
   }
   return jsonEncode([]);
-}
-
-Future<dynamic> fuelPrices(String fuelPrice) async {
-  String apiKey = dotenv.get("apiKey");
-  fuelPrice = "1:cf81fe50-6218-11ea-a677-d05099d5f839";
-  final apiUrl =
-      'https://api.tomtom.com/search/2/fuelPrice.json?key=$apiKey&fuelPrice=$fuelPrice';
-  try {
-    debugPrint('TomTom API URL: $apiUrl');
-    final response = await http.get(Uri.parse(apiUrl), headers: {
-      'Content-Type': 'application/json',
-    });
-    if (response.statusCode == 200) {
-      final results = response.body;
-      return results;
-    } else {
-      debugPrint(
-          'Failed to fetch data from TomTom API. Status code: ${response.statusCode}');
-    }
-  } catch (e) {
-    debugPrint('Error making request to TomTom API: $e');
-  }
-  return "{}";
 }
 
 class LocationService {
@@ -147,9 +118,7 @@ class _MapPageState extends State<MapPage> {
   LatLng? _userLocation = const LatLng(51.98, 5.4);
   final MapController _mapController = MapController();
   List<Marker> nearbyPoiMarkers = [];
-  Map<String, dynamic> poi = {};
-
-  // show gas station markers on the map
+  Map<String, double> poiPrices = {};
 
   // every 30 seconds execute the searchNearby function and update the list of gas stations
 
@@ -173,8 +142,6 @@ class _MapPageState extends State<MapPage> {
             "Location updated: ${position.latitude}, ${position.longitude} previous location: ${_userLocation!.latitude}, ${_userLocation!.longitude}", wrapWidth: 1000);
 
         fetchNearbyPoiMarkers(position.latitude, position.longitude);
-
-        // debugPrintSynchronously(await fetchFuelPrices("") as String, wrapWidth: 10000);
 
         setState(() {
           try {
@@ -216,29 +183,9 @@ class _MapPageState extends State<MapPage> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              //https://{baseURL}/map/{versionNumber}/tile/{layer}/{style}/{zoom}/{X}/{Y}.{format}?key={Your_API_Key}
-              // tileBounds: LatLngBounds(_userLocation!,_userLocation!),
-              //useragend: hebben we m nog nodig?
             ),
-            MarkerLayer(
-              markers: [
-                ...nearbyPoiMarkers,
-                Marker(
-                  width: 40.0,
-                  height: 40.0,
-                  point: _userLocation!,
-                  child: GestureDetector(
-                    onTap: () {
-                      debugPrint("Marker tapped");
-                    },
-                    child: const ImageIcon(
-                      AssetImage("assets/images/location.png"),
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            UserMarkerLayer(userLocation: _userLocation!),
+            FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
           ],
         ),
       ),
@@ -267,7 +214,7 @@ class _MapPageState extends State<MapPage> {
       var decodedResult = jsonDecode(result) as Map<String, dynamic>;
       var autogenResult = TomTomApiSearch.Autogenerated.fromJson(decodedResult);
 
-      debugPrintSynchronously(autogenResult.results?.take(3).map((e) => e.toJson()).toList().toString());
+      // debugPrintSynchronously(autogenResult.results?.take(3).map((e) => e.toJson()).toList().toString());
 
       // List<dynamic> fuelprices = [];
       // for (var element in autogenResult.results!) {
@@ -489,13 +436,8 @@ class _MapPageState extends State<MapPage> {
                   child: GestureDetector(
                     onTap: () {
                       debugPrint("${e.poi?.name} tapped");
-                      debugPrint("${e.dataSources?.toJson()}");
-                      if (e.dataSources?.fuelPrice?.id != null) {
-                        fetchFuelPrices(
-                            e.dataSources?.fuelPrice?.id! as String);
-                        debugPrint(
-                            "${e.dataSources?.fuelPrice?.id} ${poi[e.dataSources?.fuelPrice?.id].toString()}");
-                      }
+                        var price = poiPrices[e.id];
+                        debugPrint(price.toString());
                     },
                     child: const ImageIcon(
                       AssetImage("assets/images/gas_station-kopie.png"),
@@ -507,33 +449,28 @@ class _MapPageState extends State<MapPage> {
 
         // Now you can use nearbyPoiMarkers where needed.
       });
-    } catch (error,stacktrace) {
+
+      for (var e in autogenResult.results!){
+        await getFuelPriceFromPoiAddress(e);
+      }
+    } catch (error, stacktrace) {
       // Handle any errors that might occur during the asynchronous operations
       debugPrintSynchronously("Error fetching nearby POI markers: $error $stacktrace");
     }
   }
 
-  Future<dynamic> fetchFuelPrices(String fuelPriceId) async {
+  Future<dynamic> fetchFuelPrices(String address) async {
     try {
-      var result = await fuelPrices(fuelPriceId);
+      var result = await fuelPrices(address);
       List<dynamic> decodedResult = jsonDecode(result) as List<dynamic>;
-
-
-      // debugPrintSynchronously(decodedResult.toString());
       return decodedResult;
-      // var autogenResult =
-      //     TomTomApiFuelPrice.Autogenerated.fromJson(decodedResult);
-      //
-      // setState(() {
-      //   poi[fuelPriceId] = autogenResult.fuels;
-      // });
     } catch (error) {
       // Handle any errors that might occur during the asynchronous operations
       debugPrintSynchronously("Error fetching nearby Fuelprices: $error");
     }
   }
 
-  Future<double> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element) async {
+  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element) async {
     List<dynamic> fuelprice = await fetchFuelPrices(
         '${element.address?.streetName}${element.address?.streetNumber != null
             ? (" ${element.address?.streetNumber ?? ""}")
@@ -542,24 +479,24 @@ class _MapPageState extends State<MapPage> {
       var valid = fuelprice.where(
               (el) {
             var elGPS = LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4);
+                .round(decimals: 5);
             var elementAddress = '${element.address?.streetName}${element
                 .address?.streetNumber != null ? (" ${element.address
                 ?.streetNumber ?? ""}") : ("")}'.toLowerCase();
 
             return el["address"].toLowerCase() == elementAddress ||
                 elGPS == LatLng(element.position?.lat ?? 0,
-                    element.position?.lon ?? 0).round(decimals: 4) ||
+                    element.position?.lon ?? 0).round(decimals: 5) ||
                 elGPS == LatLng(
                     element.entryPoints?.first.position?.lat ?? 0,
                     element.entryPoints?.first.position?.lon ?? 0).round(
-                    decimals: 4) ||
+                    decimals: 5) ||
                 elGPS == LatLng(element.viewport?.btmRightPoint?.lat ?? 0,
                     element.viewport?.btmRightPoint?.lon ?? 0).round(
-                    decimals: 4) ||
+                    decimals: 5) ||
                 elGPS == LatLng(element.viewport?.topLeftPoint?.lat ?? 0,
                     element.viewport?.topLeftPoint?.lon ?? 0).round(
-                    decimals: 4) ||
+                    decimals: 5) ||
                 ((
                     elGPS.latitude.compareTo(
                         element.viewport?.btmRightPoint?.lat ?? 0) <= 0 &&
@@ -597,146 +534,11 @@ class _MapPageState extends State<MapPage> {
                 );
           });
 
-      debugPrint('<${element.address?.streetName}${element.address
-          ?.streetNumber != null ? (" ${element.address?.streetNumber ??
-          ""}") : ("")}');
-
-      for (var el in fuelprice) {
-        debugPrint('>${el?["address"]}');
-        debugPrint(
-            '>${LatLng(el?["gps"]![0] ?? 1, el?["gps"]![1] ?? 1).round(
-                decimals: 5).toString()}');
-        debugPrint('<${LatLng(
-            element.position?.lat ?? 0, element.position?.lon ?? 0).round(
-            decimals: 5).toString()}');
-        debugPrint('<${LatLng(
-            element.entryPoints?.first.position?.lat ?? 0,
-            element.entryPoints?.first.position?.lon ?? 0).round(
-            decimals: 5).toString()}');
-        debugPrint('<${LatLng(element.viewport?.btmRightPoint?.lat ?? 0,
-            element.viewport?.btmRightPoint?.lon ?? 0)
-            .round(decimals: 5)
-            .toString()}');
-        debugPrint('<${LatLng(element.viewport?.topLeftPoint?.lat ?? 0,
-            element.viewport?.topLeftPoint?.lon ?? 0)
-            .round(decimals: 5)
-            .toString()}');
-        debugPrint('<${((
-            LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4)
-                .latitude
-                .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-                0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .latitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-        ) || (
-            LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4)
-                .latitude
-                .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-                0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .latitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.btmRightPoint?.lon ?? 0) >= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lon ?? 0) <= 0
-        ) || (
-            LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4)
-                .latitude
-                .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) >=
-                0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .latitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lat ?? 0) <= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-        )
-        )}');
-        debugPrint('<${((
-            LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4)
-                .latitude
-                .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) >=
-                0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .latitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lat ?? 0) <= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-        )
-        )}');
-        debugPrint('<${((
-            LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                .round(decimals: 4)
-                .latitude
-                .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-                0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .latitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.btmRightPoint?.lon ?? 0) >= 0 &&
-                LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-                    .round(decimals: 4)
-                    .longitude
-                    .compareTo(
-                    element.viewport?.topLeftPoint?.lon ?? 0) <= 0
-        )
-        )}');
-      }
       if (valid.isNotEmpty && valid.first != null) {
-        return valid.first["price"]!;
+        setState(() {
+          poiPrices[element.id as String] = valid.first["price"];
+        });
       }
     }
-    return 0;
   }
 }
