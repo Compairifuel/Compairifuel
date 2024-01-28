@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:compairifuel/widgets/user_marker_layer.dart';
+import 'package:compairifuel/fuelOption.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -44,12 +45,12 @@ Future<dynamic> searchNearby(double latitude, double longitude,
   return "{}";
 }
 
-Future<dynamic> fuelPrices(String address) async {
+Future<dynamic> fuelPrices(String address, FuelOption fuelOption) async {
   final apiUrl =
-      'https://www.tankplanner.nl/api/v1/route/diesel/?origin=$address&destination=$address';
+      'https://www.tankplanner.nl/api/v1/route/${fuelOption.name}/?origin=$address&destination=$address';
   try {
     debugPrint('Tankplanner API URL: ${Uri.parse(apiUrl)}');
-    final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/diesel/",{"origin":address,"destination":address}), headers: {
+    final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/${fuelOption.name}/",{"origin":address,"destination":address}), headers: {
       'Content-Type': 'application/json',
       "Access-Control-Allow-Origin": "*", // Required for CORS support to work
       'Accept': '*/*',
@@ -95,8 +96,12 @@ class LocationService {
   }
 
   void startListeningLocationUpdates(void Function(Position) onLocationUpdate) {
-    _locationSubscription =
-        Geolocator.getPositionStream(locationSettings: const LocationSettings(accuracy: LocationAccuracy.bestForNavigation,distanceFilter: 10, timeLimit: Duration(milliseconds: 500))).listen(onLocationUpdate);
+    _locationSubscription = Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.bestForNavigation,
+                distanceFilter: 10,
+                timeLimit: Duration(milliseconds: 500)))
+        .listen(onLocationUpdate);
   }
 
   void dispose() {
@@ -117,15 +122,20 @@ class _MapPageState extends State<MapPage> {
   final LocationService _locationService = LocationService();
   LatLng? _userLocation = const LatLng(51.98, 5.4);
   final MapController _mapController = MapController();
-  List<Marker> nearbyPoiMarkers = [];
+  List<Map<String,dynamic>> nearbyPoiMarkers = [];
   Map<String, double> poiPrices = {};
+  final List<String> optionList = FuelOption.values
+      .map((optie) => optie.toString().split('.').last)
+      .toList();
+  FuelOption option = FuelOption.values[0];
+
+  // show gas station markers on the map
 
   // every 30 seconds execute the searchNearby function and update the list of gas stations
 
   @override
   void initState() {
     super.initState();
-
     // Check if location services are enabled
     _locationService.checkLocationAndSendNotification().catchError((error) {
       // Handle the error if location services are not enabled
@@ -133,15 +143,16 @@ class _MapPageState extends State<MapPage> {
     });
 
     // Start listening for location updates
-    _locationService.startListeningLocationUpdates((Position position) async {
+    _locationService.startListeningLocationUpdates((Position position) {
       // is the location different from the previous location?
       if(_userLocation == LatLng(position.latitude, position.longitude)) {
         return;
       } else {
         debugPrintSynchronously(
-            "Location updated: ${position.latitude}, ${position.longitude} previous location: ${_userLocation!.latitude}, ${_userLocation!.longitude}", wrapWidth: 1000);
+            "Location updated: ${position.latitude}, ${position.longitude} previous location: ${_userLocation!.latitude}, ${_userLocation!.longitude}",
+            wrapWidth: 1000);
 
-        fetchNearbyPoiMarkers(position.latitude, position.longitude);
+        fetchNearbyPoiMarkers(position.latitude, position.longitude, option);
 
         setState(() {
           try {
@@ -186,6 +197,25 @@ class _MapPageState extends State<MapPage> {
             ),
             UserMarkerLayer(userLocation: _userLocation!),
             FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
+            Padding(
+              padding: EdgeInsets.all(12.0), // Adjust the padding values as needed
+              child: DropdownButton<FuelOption>(
+                value: option,
+                onChanged: (FuelOption? newValue) {
+                  setState(() {
+                    option = newValue!;
+                    //tankmapperqueremethodcallmoethier(option);
+                  });
+                },
+                items: optionList
+                    .map<DropdownMenuItem<FuelOption>>((String value) {
+                  return DropdownMenuItem<FuelOption>(
+                    value: FuelOption.values[optionList.indexOf(value)],
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -206,250 +236,25 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
-  Future<void> fetchNearbyPoiMarkers(latitude, longitude) async {
+  Future<void> fetchNearbyPoiMarkers(latitude, longitude, FuelOption option) async {
     try {
       var result = await searchNearby(latitude, longitude);
       var decodedResult = jsonDecode(result) as Map<String, dynamic>;
       var autogenResult = TomTomApiSearch.Autogenerated.fromJson(decodedResult);
 
-      // debugPrintSynchronously(autogenResult.results?.take(3).map((e) => e.toJson()).toList().toString());
-
-      // List<dynamic> fuelprices = [];
-      // for (var element in autogenResult.results!) {
-      //   getFuelPriceFromPoiAddress(element);
-      //     // List<dynamic> fuelprice = await fetchFuelPrices('${element.address?.streetName}${element.address?.streetNumber!= null?(" ${element.address?.streetNumber??""}"):("")}, ${element.address?.postalCode}');
-      //     // if(fuelprice.isNotEmpty && fuelprice.first != null) {
-      //     //   var valid = fuelprice.where(
-      //     //           (el) {
-      //     //         var elGPS = LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4);
-      //     //         var elementAddress = '${element.address?.streetName}${element
-      //     //             .address?.streetNumber != null ? (" ${element.address
-      //     //             ?.streetNumber ?? ""}") : ("")}'.toLowerCase();
-      //     //
-      //     //         return el["address"].toLowerCase() == elementAddress ||
-      //     //             elGPS == LatLng(element.position?.lat ?? 0,
-      //     //                 element.position?.lon ?? 0).round(decimals: 4) ||
-      //     //             elGPS == LatLng(
-      //     //                 element.entryPoints?.first.position?.lat ?? 0,
-      //     //                 element.entryPoints?.first.position?.lon ?? 0).round(
-      //     //                 decimals: 4) ||
-      //     //             elGPS == LatLng(element.viewport?.btmRightPoint?.lat ?? 0,
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0).round(
-      //     //                 decimals: 4) ||
-      //     //             elGPS == LatLng(element.viewport?.topLeftPoint?.lat ?? 0,
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0).round(
-      //     //                 decimals: 4) ||
-      //     //             ((
-      //     //                 elGPS.latitude.compareTo(
-      //     //                     element.viewport?.btmRightPoint?.lat ?? 0) <= 0 &&
-      //     //                     elGPS.latitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lat ?? 0) >=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.btmRightPoint?.lon ?? 0) <=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-      //     //             ) || (
-      //     //                 elGPS.latitude.compareTo(
-      //     //                     element.viewport?.btmRightPoint?.lat ?? 0) <= 0 &&
-      //     //                     elGPS.latitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lat ?? 0) >=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.btmRightPoint?.lon ?? 0) >=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lon ?? 0) <= 0
-      //     //             ) || (
-      //     //                 elGPS.latitude.compareTo(
-      //     //                     element.viewport?.btmRightPoint?.lat ?? 0) >= 0 &&
-      //     //                     elGPS.latitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lat ?? 0) <=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.btmRightPoint?.lon ?? 0) <=
-      //     //                         0 &&
-      //     //                     elGPS.longitude.compareTo(
-      //     //                         element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-      //     //             )
-      //     //             );
-      //     //       });
-      //     //
-      //     //   debugPrint('<${element.address?.streetName}${element.address
-      //     //       ?.streetNumber != null ? (" ${element.address?.streetNumber ??
-      //     //       ""}") : ("")}');
-      //     //
-      //     //   for (var el in fuelprice) {
-      //     //     debugPrint('>${el?["address"]}');
-      //     //     debugPrint(
-      //     //         '>${LatLng(el?["gps"]![0] ?? 1, el?["gps"]![1] ?? 1).round(
-      //     //             decimals: 5).toString()}');
-      //     //     debugPrint('<${LatLng(
-      //     //         element.position?.lat ?? 0, element.position?.lon ?? 0).round(
-      //     //         decimals: 5).toString()}');
-      //     //     debugPrint('<${LatLng(
-      //     //         element.entryPoints?.first.position?.lat ?? 0,
-      //     //         element.entryPoints?.first.position?.lon ?? 0).round(
-      //     //         decimals: 5).toString()}');
-      //     //     debugPrint('<${LatLng(element.viewport?.btmRightPoint?.lat ?? 0,
-      //     //         element.viewport?.btmRightPoint?.lon ?? 0)
-      //     //         .round(decimals: 5)
-      //     //         .toString()}');
-      //     //     debugPrint('<${LatLng(element.viewport?.topLeftPoint?.lat ?? 0,
-      //     //         element.viewport?.topLeftPoint?.lon ?? 0)
-      //     //         .round(decimals: 5)
-      //     //         .toString()}');
-      //     //     debugPrint('<${((
-      //     //         LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4)
-      //     //             .latitude
-      //     //             .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-      //     //             0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .latitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-      //     //     ) || (
-      //     //         LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4)
-      //     //             .latitude
-      //     //             .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-      //     //             0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .latitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0) >= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0) <= 0
-      //     //     ) || (
-      //     //         LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4)
-      //     //             .latitude
-      //     //             .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) >=
-      //     //             0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .latitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lat ?? 0) <= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-      //     //     )
-      //     //     )}');
-      //     //     debugPrint('<${((
-      //     //         LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4)
-      //     //             .latitude
-      //     //             .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) >=
-      //     //             0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .latitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lat ?? 0) <= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0) <= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0) >= 0
-      //     //     )
-      //     //     )}');
-      //     //     debugPrint('<${((
-      //     //         LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //             .round(decimals: 4)
-      //     //             .latitude
-      //     //             .compareTo(element.viewport?.btmRightPoint?.lat ?? 0) <=
-      //     //             0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .latitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lat ?? 0) >= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.btmRightPoint?.lon ?? 0) >= 0 &&
-      //     //             LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
-      //     //                 .round(decimals: 4)
-      //     //                 .longitude
-      //     //                 .compareTo(
-      //     //                 element.viewport?.topLeftPoint?.lon ?? 0) <= 0
-      //     //     )
-      //     //     )}');
-      //     //   }
-      //     //   if (valid.isNotEmpty && valid.first != null) {
-      //     //     debugPrint(
-      //     //         '>>>${valid.first?["address"]}   ${valid.first?["gps"]}');
-      //     //     fuelprices.add(valid.first);
-      //     //   }
-      //     // }
-      // }
-      //
-      // debugPrint(fuelprices.toString());
-
-      setState(() async {
-        for (var element in autogenResult.results!) {
-          poiPrices[element.id as String] = await getFuelPriceFromPoiAddress(element);
-        }
-        nearbyPoiMarkers = autogenResult.results!
-            .map((e) => Marker(
-                  point: LatLng(
-                      e.position!.lat as double, e.position!.lon as double),
-                  child: GestureDetector(
-                    onTap: () {
-                      debugPrint("${e.poi?.name} tapped");
-                        var price = poiPrices[e.id];
-                        debugPrint(price.toString());
-                    },
-                    child: const ImageIcon(
-                      AssetImage("assets/images/gas_station-kopie.png"),
-                      size: 24,
-                    ),
-                  ),
-                ))
-            .toList();
-
-        // Now you can use nearbyPoiMarkers where needed.
+      setState(() {
+        nearbyPoiMarkers = autogenResult.results!.map((e) {
+          Map<String,dynamic> a = <String,dynamic>{"position": LatLng(e.position?.lat ?? 0, e.position?.lon ?? 0),"name": e.poi?.name,"onTap": () {
+            debugPrint("${e.poi?.name} tapped");
+            var price = poiPrices[e.id];
+            debugPrint(price.toString());
+          },"address": e.address as dynamic,"id": e.id};
+          return a;
+        }).toList();
       });
 
       for (var e in autogenResult.results!){
-        await getFuelPriceFromPoiAddress(e);
+        await getFuelPriceFromPoiAddress(e, option);
       }
     } catch (error, stacktrace) {
       // Handle any errors that might occur during the asynchronous operations
@@ -457,9 +262,9 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<dynamic> fetchFuelPrices(String address) async {
+  Future<dynamic> fetchFuelPrices(String address, FuelOption option) async {
     try {
-      var result = await fuelPrices(address);
+      var result = await fuelPrices(address, option);
       List<dynamic> decodedResult = jsonDecode(result) as List<dynamic>;
       return decodedResult;
     } catch (error) {
@@ -468,11 +273,11 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element) async {
+  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element, FuelOption option) async {
     List<dynamic> fuelprice = await fetchFuelPrices(
         '${element.address?.streetName}${element.address?.streetNumber != null
             ? (" ${element.address?.streetNumber ?? ""}")
-            : ("")}, ${element.address?.postalCode}');
+            : ("")}, ${element.address?.postalCode}', option);
     if (fuelprice.isNotEmpty && fuelprice.first != null) {
       var valid = fuelprice.where(
               (el) {
