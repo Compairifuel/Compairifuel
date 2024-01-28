@@ -225,8 +225,6 @@ class _MapPageState extends State<MapPage> {
   @override
   void didUpdateWidget(MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    debugPrint("MapPage didUpdateWidget");
-    // fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
   }
 
   @override
