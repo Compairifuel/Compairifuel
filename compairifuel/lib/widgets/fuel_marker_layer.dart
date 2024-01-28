@@ -25,7 +25,21 @@ class FuelMarkerLayer extends StatelessWidget {
             point: e["position"],
             child: GestureDetector(
               onTap: () {
-                e["onTap"]();
+                e["onTap"](
+                  checkNull(e),
+                  showDialog(context: context, builder: (BuildContext context) => AlertDialog(
+                    title: Text(e["name"]),
+                    content: Text('€${e["price"]?.toStringAsFixed(2)}/L van de gekozen brandstof'),
+
+                  actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'OK'),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                )
+                  )
+                );
               },
               child: const ImageIcon(
                 AssetImage("assets/images/gas_station-kopie.png"),
@@ -36,5 +50,10 @@ class FuelMarkerLayer extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+void checkNull(Map<String, dynamic> e) {
+  if (e["price"] == null) {
+    e["price"] = 0.00;
   }
 }
