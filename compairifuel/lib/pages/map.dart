@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:compairifuel/widgets/user_marker_layer.dart';
-import 'package:compairifuel/fuelOption.dart';
+import 'package:compairifuel/fuel_option.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -45,12 +45,12 @@ Future<dynamic> searchNearby(double latitude, double longitude,
   return "{}";
 }
 
-Future<dynamic> fuelPrices(String address) async {
+Future<dynamic> fuelPrices(String address, FuelOption fuelOption) async {
   final apiUrl =
-      'https://www.tankplanner.nl/api/v1/route/diesel/?origin=$address&destination=$address';
+      'https://www.tankplanner.nl/api/v1/route/${fuelOption.name}/?origin=$address&destination=$address';
   try {
     debugPrint('Tankplanner API URL: ${Uri.parse(apiUrl)}');
-    final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/diesel/",{"origin":address,"destination":address}), headers: {
+    final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/${fuelOption.name}/",{"origin":address,"destination":address}), headers: {
       'Content-Type': 'application/json',
       "Access-Control-Allow-Origin": "*", // Required for CORS support to work
       'Accept': '*/*',
@@ -124,10 +124,8 @@ class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
   List<Map<String,dynamic>> nearbyPoiMarkers = [];
   Map<String, double> poiPrices = {};
-  final List<String> optionList = FuelOption.values
-      .map((optie) => optie.toString().split('.').last)
-      .toList();
-  FuelOption option = FuelOption.values[0];
+  final List<String> optionList = FuelOption.values.map((e) => e.name).toList();
+  FuelOption option = FuelOption.diesel;
 
   // show gas station markers on the map
 
@@ -152,7 +150,7 @@ class _MapPageState extends State<MapPage> {
             "Location updated: ${position.latitude}, ${position.longitude} previous location: ${_userLocation!.latitude}, ${_userLocation!.longitude}",
             wrapWidth: 1000);
 
-        fetchNearbyPoiMarkers(position.latitude, position.longitude);
+        fetchNearbyPoiMarkers(position.latitude, position.longitude, option);
 
         setState(() {
           try {
@@ -198,13 +196,13 @@ class _MapPageState extends State<MapPage> {
             UserMarkerLayer(userLocation: _userLocation!),
             FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
             Padding(
-              padding: EdgeInsets.all(12.0), // Adjust the padding values as needed
+              padding: EdgeInsets.all(25), // Adjust the padding values as needed
               child: DropdownButton<FuelOption>(
+                iconSize: 50.0,
                 value: option,
                 onChanged: (FuelOption? newValue) {
                   setState(() {
                     option = newValue!;
-                    //tankmapperqueremethodcallmoethier(option);
                   });
                 },
                 items: optionList
@@ -236,7 +234,7 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
-  Future<void> fetchNearbyPoiMarkers(latitude, longitude) async {
+  Future<void> fetchNearbyPoiMarkers(latitude, longitude, FuelOption option) async {
     try {
       var result = await searchNearby(latitude, longitude);
       var decodedResult = jsonDecode(result) as Map<String, dynamic>;
@@ -248,13 +246,14 @@ class _MapPageState extends State<MapPage> {
             debugPrint("${e.poi?.name} tapped");
             var price = poiPrices[e.id];
             debugPrint(price.toString());
+
           },"address": e.address as dynamic,"id": e.id};
           return a;
         }).toList();
       });
 
       for (var e in autogenResult.results!){
-        await getFuelPriceFromPoiAddress(e);
+        await getFuelPriceFromPoiAddress(e, option);
       }
     } catch (error, stacktrace) {
       // Handle any errors that might occur during the asynchronous operations
@@ -262,9 +261,9 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<dynamic> fetchFuelPrices(String address) async {
+  Future<dynamic> fetchFuelPrices(String address, FuelOption option) async {
     try {
-      var result = await fuelPrices(address);
+      var result = await fuelPrices(address, option);
       List<dynamic> decodedResult = jsonDecode(result) as List<dynamic>;
       return decodedResult;
     } catch (error) {
@@ -273,11 +272,11 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element) async {
+  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element, FuelOption option) async {
     List<dynamic> fuelprice = await fetchFuelPrices(
         '${element.address?.streetName}${element.address?.streetNumber != null
             ? (" ${element.address?.streetNumber ?? ""}")
-            : ("")}, ${element.address?.postalCode}');
+            : ("")}, ${element.address?.postalCode}', option);
     if (fuelprice.isNotEmpty && fuelprice.first != null) {
       var valid = fuelprice.where(
               (el) {
