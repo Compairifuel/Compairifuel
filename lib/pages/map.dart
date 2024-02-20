@@ -20,7 +20,7 @@ Future main() async {
 
 Future<dynamic> searchNearby(double latitude, double longitude,
     {int radius = 25000}) async {
-  String apiKey = dotenv.get("apiKey");
+  String apiKey = dotenv.get("API_KEY");
 
   // Electric vehicle charging stations == 7309
   // Gas stations == 7311
@@ -87,7 +87,7 @@ class LocationService {
     LocationPermission permission = await Geolocator.checkPermission();
     return permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
-  }
+}
 
   Future<Position> getCurrentLocation() async {
     return await Geolocator.getCurrentPosition(
