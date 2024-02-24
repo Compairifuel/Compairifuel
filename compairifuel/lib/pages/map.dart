@@ -204,7 +204,7 @@ class _MapPageState extends State<MapPage> {
             UserMarkerLayer(userLocation: _userLocation!),
             FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
             Padding(
-              padding: EdgeInsets.all(25),
+              padding: const EdgeInsets.all(25),
               // Adjust the padding values as needed
               child: DropdownButton<FuelOption>(
                 iconSize: 50.0,
