@@ -1,5 +1,7 @@
 import 'dart:core';
 
+import 'package:compairifuel/widgets/user_marker_layer.dart';
+import 'package:compairifuel/fuel_option.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -9,17 +11,22 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:async';
-import '../TomTomApi.dart' as TomTomApi;
+import '../TomTomApiSearch.dart' as TomTomApiSearch;
+import '../widgets/fuel_marker_layer.dart';
 
 Future main() async {
   await dotenv.load(fileName: ".env");
 }
 
 Future<dynamic> searchNearby(double latitude, double longitude,
-    {int radius = 50000}) async {
-  String apiKey = dotenv.get("apiKey");
+    {int radius = 25000}) async {
+  String apiKey = dotenv.get("API_KEY");
+
+  // Electric vehicle charging stations == 7309
+  // Gas stations == 7311
+
   final apiUrl =
-      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311';
+      'https://api.tomtom.com/search/2/nearbySearch/.json?key=$apiKey&lat=$latitude&lon=$longitude&radius=$radius&categorySet=7311&relatedPois=off&limit=100&countrySet=NLD,BEL,DEU&minFuzzyLevel=2&maxFuzzyLevel=4';
   try {
     debugPrint('TomTom API URL: $apiUrl');
     final response = await http.get(Uri.parse(apiUrl), headers: {
@@ -35,7 +42,30 @@ Future<dynamic> searchNearby(double latitude, double longitude,
   } catch (e) {
     debugPrint('Error making request to TomTom API: $e');
   }
-  return {};
+  return "{}";
+}
+
+Future<dynamic> fuelPrices(String address, FuelOption fuelOption) async {
+  final apiUrl =
+      'https://www.tankplanner.nl/api/v1/route/${fuelOption.name}/?origin=$address&destination=$address';
+  try {
+    debugPrint('Tankplanner API URL: ${Uri.parse(apiUrl)}');
+    final response = await http.get(Uri.https("www.tankplanner.nl","/api/v1/route/${fuelOption.name}/",{"origin":address,"destination":address}), headers: {
+      'Content-Type': 'application/json',
+      "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+      'Accept': '*/*',
+    });
+    if (response.statusCode == 200) {
+      final results = response.body;
+      return results;
+    } else {
+      debugPrint(
+          'Failed to fetch data from Tankplanner API. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    debugPrint('Error making request to Tankplanner API: $e');
+  }
+  return jsonEncode([]);
 }
 
 class LocationService {
@@ -48,6 +78,7 @@ class LocationService {
     if (!isLocationEnabled) {
       // Handle the case where location is not enabled
       // You might want to show a message to the user or take appropriate action
+      Geolocator.requestPermission();
       throw Exception("Location is not enabled");
     }
   }
@@ -56,17 +87,21 @@ class LocationService {
     LocationPermission permission = await Geolocator.checkPermission();
     return permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse;
-  }
+}
 
   Future<Position> getCurrentLocation() async {
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
     );
   }
 
   void startListeningLocationUpdates(void Function(Position) onLocationUpdate) {
-    _locationSubscription =
-        Geolocator.getPositionStream().listen(onLocationUpdate);
+    _locationSubscription = Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.bestForNavigation,
+                distanceFilter: 10,
+                timeLimit: Duration(milliseconds: 500)))
+        .listen(onLocationUpdate);
   }
 
   void dispose() {
@@ -85,9 +120,12 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final LocationService _locationService = LocationService();
-  LatLng? _userLocation = const LatLng(51.3, 5.1);
+  LatLng? _userLocation = const LatLng(51.98, 5.4);
   final MapController _mapController = MapController();
-  List<Marker> nearbyPoiMarkers = [];
+  List<Map<String,dynamic>> nearbyPoiMarkers = [];
+  Map<String, double> poiPrices = {};
+  final List<String> optionList = FuelOption.values.map((e) => e.name).toList();
+  FuelOption option = FuelOption.diesel;
 
   // show gas station markers on the map
 
@@ -96,7 +134,6 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-
     // Check if location services are enabled
     _locationService.checkLocationAndSendNotification().catchError((error) {
       // Handle the error if location services are not enabled
@@ -105,38 +142,42 @@ class _MapPageState extends State<MapPage> {
 
     // Start listening for location updates
     _locationService.startListeningLocationUpdates((Position position) {
-      debugPrint(
-          "Location updated: ${position.latitude}, ${position.longitude}");
+      // is the location different from the previous location?
+      if(_userLocation == LatLng(position.latitude, position.longitude)) {
+        return;
+      } else {
+        debugPrintSynchronously(
+            "Location updated: ${position.latitude}, ${position.longitude} previous location: ${_userLocation!.latitude}, ${_userLocation!.longitude}",
+            wrapWidth: 1000);
 
-      fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
+        fetchNearbyPoiMarkers(position.latitude, position.longitude, option);
 
-      setState(() {
+        setState(() {
+          try {
+            _userLocation = LatLng(position.latitude, position.longitude);
+          } catch (e) {
+            debugPrint("Error updating location: $e");
+          }
+        });
+
         try {
-          _userLocation = LatLng(position.latitude, position.longitude);
+          // FIXME
+          // if (_userLocation != null) {
+          //   // Your map-related code
+          //   final cameraFit = CameraFit.bounds(
+          //     bounds: LatLngBounds(_userLocation!, _userLocation!),
+          //     padding: const EdgeInsets.all(8.0),
+          //   );
+          //
+          //   cameraFit.fit(_mapController.camera);
+          //   _mapController.fitCamera(cameraFit);
+          //   _mapController.move(_userLocation!, 0.0);
+          // }
         } catch (e) {
-          debugPrint("Error updating location: $e");
+          debugPrint("Error moving camera: $e");
         }
-      });
-
-      try {
-        // FIXME
-        // if (_userLocation != null) {
-        //   // Your map-related code
-        //   final cameraFit = CameraFit.bounds(
-        //     bounds: LatLngBounds(_userLocation!, _userLocation!),
-        //     padding: const EdgeInsets.all(8.0),
-        //   );
-        //
-        //   cameraFit.fit(_mapController.camera);
-        //   _mapController.fitCamera(cameraFit);
-        //   _mapController.move(_userLocation!, 0.0);
-        // }
-      } catch (e) {
-        debugPrint("Error moving camera: $e");
       }
     });
-
-    fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
   }
 
   @override
@@ -151,28 +192,27 @@ class _MapPageState extends State<MapPage> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              //https://{baseURL}/map/{versionNumber}/tile/{layer}/{style}/{zoom}/{X}/{Y}.{format}?key={Your_API_Key}
-              // tileBounds: LatLngBounds(_userLocation!,_userLocation!),
-              //useragend: hebben we m nog nodig?
             ),
-            MarkerLayer(
-              markers: [
-                ...nearbyPoiMarkers,
-                Marker(
-                  width: 40.0,
-                  height: 40.0,
-                  point: _userLocation!,
-                  child: GestureDetector(
-                    onTap: () {
-                      debugPrint("Marker tapped");
-                    },
-                    child: const ImageIcon(
-                      AssetImage("assets/images/location.png"),
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
+            UserMarkerLayer(userLocation: _userLocation!),
+            FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
+            Padding(
+              padding: EdgeInsets.all(25), // Adjust the padding values as needed
+              child: DropdownButton<FuelOption>(
+                iconSize: 50.0,
+                value: option,
+                onChanged: (FuelOption? newValue) {
+                  setState(() {
+                    option = newValue!;
+                  });
+                },
+                items: optionList
+                    .map<DropdownMenuItem<FuelOption>>((String value) {
+                  return DropdownMenuItem<FuelOption>(
+                    value: FuelOption.values[optionList.indexOf(value)],
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
@@ -183,8 +223,6 @@ class _MapPageState extends State<MapPage> {
   @override
   void didUpdateWidget(MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    debugPrint("MapPage didUpdateWidget");
-    fetchNearbyPoiMarkers(_userLocation!.latitude, _userLocation!.longitude);
   }
 
   @override
@@ -196,32 +234,113 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
-  Future<void> fetchNearbyPoiMarkers(latitude,longitude) async {
+  Future<void> fetchNearbyPoiMarkers(latitude, longitude, FuelOption option) async {
     try {
       var result = await searchNearby(latitude, longitude);
       var decodedResult = jsonDecode(result) as Map<String, dynamic>;
-      var autogenResult = TomTomApi.Autogenerated.fromJson(decodedResult);
+      var autogenResult = TomTomApiSearch.Autogenerated.fromJson(decodedResult);
 
       setState(() {
-        nearbyPoiMarkers = autogenResult.results!.map((e) =>
-            Marker(
-              point: LatLng(e.position!.lat as double, e.position!.lon as double),
-              child: GestureDetector(
-                onTap: () {
-                  debugPrint("${e.poi?.name} tapped");
-                },
-                child: const ImageIcon(
-                  AssetImage("assets/images/gas_station-kopie.png"),
-                  size: 24,
-                ),
-              ),
-            )).toList();
+        nearbyPoiMarkers = autogenResult.results!.map((e) {
+          Map<String,dynamic> a = <String,dynamic>{"position": LatLng(e.position?.lat ?? 0, e.position?.lon ?? 0),"name": e.poi?.name,"onTap": () {
+            debugPrint("${e.poi?.name} tapped");
+            var price = poiPrices[e.id];
+            debugPrint(price.toString());
 
-        // Now you can use nearbyPoiMarkers where needed.
+          },"address": e.address as dynamic,"id": e.id};
+          return a;
+        }).toList();
       });
+
+      for (var e in autogenResult.results!){
+        await getFuelPriceFromPoiAddress(e, option);
+      }
+    } catch (error, stacktrace) {
+      // Handle any errors that might occur during the asynchronous operations
+      debugPrintSynchronously("Error fetching nearby POI markers: $error $stacktrace");
+    }
+  }
+
+  Future<dynamic> fetchFuelPrices(String address, FuelOption option) async {
+    try {
+      var result = await fuelPrices(address, option);
+      List<dynamic> decodedResult = jsonDecode(result) as List<dynamic>;
+      return decodedResult;
     } catch (error) {
       // Handle any errors that might occur during the asynchronous operations
-      debugPrintSynchronously("Error fetching nearby POI markers: $error");
+      debugPrintSynchronously("Error fetching nearby Fuelprices: $error");
+    }
+  }
+
+  Future<void> getFuelPriceFromPoiAddress(TomTomApiSearch.Results element, FuelOption option) async {
+    List<dynamic> fuelprice = await fetchFuelPrices(
+        '${element.address?.streetName}${element.address?.streetNumber != null
+            ? (" ${element.address?.streetNumber ?? ""}")
+            : ("")}, ${element.address?.postalCode}', option);
+    if (fuelprice.isNotEmpty && fuelprice.first != null) {
+      var valid = fuelprice.where(
+              (el) {
+            var elGPS = LatLng(el["gps"]?[0] ?? 1, el["gps"]?[1] ?? 1)
+                .round(decimals: 5);
+            var elementAddress = '${element.address?.streetName}${element
+                .address?.streetNumber != null ? (" ${element.address
+                ?.streetNumber ?? ""}") : ("")}'.toLowerCase();
+
+            return el["address"].toLowerCase() == elementAddress ||
+                elGPS == LatLng(element.position?.lat ?? 0,
+                    element.position?.lon ?? 0).round(decimals: 5) ||
+                elGPS == LatLng(
+                    element.entryPoints?.first.position?.lat ?? 0,
+                    element.entryPoints?.first.position?.lon ?? 0).round(
+                    decimals: 5) ||
+                elGPS == LatLng(element.viewport?.btmRightPoint?.lat ?? 0,
+                    element.viewport?.btmRightPoint?.lon ?? 0).round(
+                    decimals: 5) ||
+                elGPS == LatLng(element.viewport?.topLeftPoint?.lat ?? 0,
+                    element.viewport?.topLeftPoint?.lon ?? 0).round(
+                    decimals: 5) ||
+                ((
+                    elGPS.latitude.compareTo(
+                        element.viewport?.btmRightPoint?.lat ?? 0) <= 0 &&
+                        elGPS.latitude.compareTo(
+                            element.viewport?.topLeftPoint?.lat ?? 0) >=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.btmRightPoint?.lon ?? 0) <=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.topLeftPoint?.lon ?? 0) >= 0
+                ) || (
+                    elGPS.latitude.compareTo(
+                        element.viewport?.btmRightPoint?.lat ?? 0) <= 0 &&
+                        elGPS.latitude.compareTo(
+                            element.viewport?.topLeftPoint?.lat ?? 0) >=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.btmRightPoint?.lon ?? 0) >=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.topLeftPoint?.lon ?? 0) <= 0
+                ) || (
+                    elGPS.latitude.compareTo(
+                        element.viewport?.btmRightPoint?.lat ?? 0) >= 0 &&
+                        elGPS.latitude.compareTo(
+                            element.viewport?.topLeftPoint?.lat ?? 0) <=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.btmRightPoint?.lon ?? 0) <=
+                            0 &&
+                        elGPS.longitude.compareTo(
+                            element.viewport?.topLeftPoint?.lon ?? 0) >= 0
+                )
+                );
+          });
+
+      if (valid.isNotEmpty && valid.first != null) {
+        setState(() {
+          poiPrices[element.id as String] = valid.first["price"];
+        });
+      }
     }
   }
 }

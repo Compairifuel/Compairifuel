@@ -100,6 +100,7 @@ class Results {
   List<EntryPoints>? entryPoints;
   List<String>? fuelTypes;
   List<String>? vehicleTypes;
+  DataSources? dataSources;
 
   Results(
       {this.type,
@@ -113,7 +114,8 @@ class Results {
       this.viewport,
       this.entryPoints,
       this.fuelTypes,
-      this.vehicleTypes});
+      this.vehicleTypes,
+      this.dataSources});
 
   factory Results.fromJson(Map<String, dynamic> json) {
     return Results(
@@ -131,6 +133,7 @@ class Results {
           .toList(),
       fuelTypes: (json['fuelTypes'] as List<dynamic>?)?.cast<String>(),
       vehicleTypes: (json['vehicleTypes'] as List<dynamic>?)?.cast<String>(),
+      dataSources: json['dataSources'] != null ? DataSources.fromJson(json['dataSources']) : null,
     );
   }
 
@@ -158,6 +161,9 @@ class Results {
     }
     data['fuelTypes'] = fuelTypes;
     data['vehicleTypes'] = vehicleTypes;
+    if (dataSources != null) {
+      data['dataSources'] = dataSources!.toJson();
+    }
     return data;
   }
 }
@@ -422,3 +428,42 @@ class EntryPoints {
     return data;
   }
 }
+
+class DataSources {
+  FuelPrice? fuelPrice;
+
+  DataSources({this.fuelPrice});
+
+  factory DataSources.fromJson(Map<String, dynamic> json) {
+    return DataSources(
+      fuelPrice: json['fuelPrice'] != null ? FuelPrice.fromJson(json['fuelPrice']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (fuelPrice != null) {
+      data['fuelPrice'] = fuelPrice!.toJson();
+    }
+    return data;
+  }
+}
+
+class FuelPrice {
+  String id;
+
+  FuelPrice({required this.id});
+
+  factory FuelPrice.fromJson(Map<String, dynamic> json) {
+    return FuelPrice(
+        id: json['id']
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    return data;
+  }
+}
+
