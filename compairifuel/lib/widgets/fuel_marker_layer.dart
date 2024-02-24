@@ -26,10 +26,9 @@ class FuelMarkerLayer extends StatelessWidget {
             child: GestureDetector(
               onTap: () {
                 e["onTap"](
-                  checkNull(e),
-                  showDialog(context: context, builder: (BuildContext context) => AlertDialog(
+                    showDialog(context: context, builder: (BuildContext context) => AlertDialog(
                     title: Text(e["name"]),
-                    content: Text('€${e["price"]?.toStringAsFixed(2)}/L van de gekozen brandstof'),
+                    content: Text('€${(e["price"]??=0.0)!.toStringAsFixed(2)}/L van de gekozen brandstof'),
 
                   actions: [
                       TextButton(
@@ -50,10 +49,5 @@ class FuelMarkerLayer extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-void checkNull(Map<String, dynamic> e) {
-  if (e["price"] == null) {
-    e["price"] = 0.00;
   }
 }
