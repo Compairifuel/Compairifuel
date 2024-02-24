@@ -7,7 +7,7 @@ import 'package:device_preview/device_preview.dart';
 import 'package:compairifuel/pages/map.dart';
 
 void main() async {
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
   runApp(
     DevicePreview(
