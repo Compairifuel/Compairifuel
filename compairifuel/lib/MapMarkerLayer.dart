@@ -1,0 +1,2 @@
+class MapMarkerLayer extends MarkerLayer {
+}
