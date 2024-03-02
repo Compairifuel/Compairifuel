@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:compairifuel/widgets/user_marker_layer.dart';
-import 'package:compairifuel/fuel_option.dart';
+import 'package:compairifuel/FuelOption.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -130,7 +130,7 @@ class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
   List<Map<String, dynamic>> nearbyPoiMarkers = [];
   Map<String, double> poiPrices = {};
-  final List<String> optionList = FuelOption.values.map((e) => e.name).toList();
+  final List<FuelOption> optionList = FuelOption.values.toList();
   FuelOption option = FuelOption.diesel;
 
   // show gas station markers on the map
@@ -204,7 +204,8 @@ class _MapPageState extends State<MapPage> {
             UserMarkerLayer(userLocation: _userLocation!),
             FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
             Padding(
-              padding: EdgeInsets.all(25), // Adjust the padding values as needed
+              padding: EdgeInsets.all(25),
+              // Adjust the padding values as needed
               child: DropdownButton<FuelOption>(
                 iconSize: 50.0,
                 value: option,
@@ -246,12 +247,17 @@ class _MapPageState extends State<MapPage> {
 
       setState(() {
         nearbyPoiMarkers = autogenResult.results!.map((e) {
-          Map<String,dynamic> a = <String,dynamic>{"position": LatLng(e.position?.lat ?? 0, e.position?.lon ?? 0),"name": e.poi?.name,"onTap": () {
-            debugPrint("${e.poi?.name} tapped");
-            var price = poiPrices[e.id];
-            debugPrint(price.toString());
-
-          },"address": e.address as dynamic,"id": e.id};
+          Map<String, dynamic> a = <String, dynamic>{
+            "position": LatLng(e.position?.lat ?? 0, e.position?.lon ?? 0),
+            "name": e.poi?.name,
+            "onTap": () {
+              debugPrint("${e.poi?.name} tapped");
+              var price = poiPrices[e.id];
+              debugPrint(price.toString());
+            },
+            "address": e.address as dynamic,
+            "id": e.id
+          };
           return a;
         }).toList();
       });

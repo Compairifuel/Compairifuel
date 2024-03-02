@@ -1,13 +1,11 @@
-class NavItem extends StatelessWidget {
-  String title;
-  NavIcon navIcon;
 
-  NavItem(super.key, required this.title, required this.navIcon){
-    this.title = title;
-    this.navIcon = navIcon;
-  }
+import 'package:compairifuel/NavIcon.dart';
+import 'package:flutter/material.dart';
 
-  build(BuildContext context){
-    //TODO
-  }
+class NavItem extends BottomNavigationBarItem {
+  final String title;
+  final NavIcon navIcon;
+  final MaterialPageRoute navigation;
+
+  NavItem({required this.title, required this.navIcon, required this.navigation}) : super(icon: navIcon, label: title);
 }

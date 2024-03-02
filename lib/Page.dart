@@ -1,23 +1,44 @@
+import 'package:compairifuel/Content.dart';
+import 'package:compairifuel/Header.dart';
+import 'package:compairifuel/Navbar.dart';
+import 'package:compairifuel/Pagination.dart';
+import 'package:flutter/material.dart';
+
 class Page extends StatefulWidget {
-  Header? header;
-  Pagination pagination;
-  Navbar navbar;
-  String title;
-  Content content;
+  final Header? header;
+  final Pagination? pagination;
+  final Navbar navbar;
+  final String title;
+  final Content content;
 
-  Page(String title){
-    this.title = title;
-  }
+  const Page({super.key, required this.title, required this.content, required this.navbar, required this.pagination, this.header});
 
+  @override
   State<Page> createState() {
-    PageState();
-  }
-
-  build(BuildContext context){
-    //TODO
+    return _PageState();
   }
 }
 
 class _PageState extends State<Page> {
-  int pageIndex;
+  int pageIndex = 0;
+
+  void changePage(int index) {
+    setState(() {
+      pageIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        bottomNavigationBar: widget.navbar,
+      body:Column(
+        children: <Widget>[
+          if(widget.header != null) widget.header!,
+          widget.content as Widget,
+          if(widget.pagination != null) widget.pagination!,
+        ],
+      ),
+      );
+  }
 }
