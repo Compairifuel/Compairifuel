@@ -1,11 +1,7 @@
-class NavIcon extends StatelessWidget {
-  String icon;
+import 'package:flutter/widgets.dart';
 
-  NavIcon(String icon){
-    this.icon = icon;
-  }
+class NavIcon extends ImageIcon {
 
-  build(BuildContext context){
-    //TODO
-  }
+  const NavIcon(super.image, {super.key});
+
 }
