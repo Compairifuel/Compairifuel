@@ -4,11 +4,9 @@ enum FuelOption {
   eur90("Eur90"),
   eur98("Eur98");
 
-  const FuelOption({
-    required this.name
-  })
+  const FuelOption(String name) : _name = name;
 
-  final String name;
+  final String _name;
 
-  String get name => name
+  String get getName => _name;
 }

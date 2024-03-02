@@ -1,6 +1,13 @@
+import 'package:flutter/widgets.dart';
+
 class PageTitle extends StatelessWidget {
-  String title;
-  PageTitle(String title){
-    this.title = title;
+  final String title;
+  const PageTitle({super.key, required this.title});
+
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
   }
 }
