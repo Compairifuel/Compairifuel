@@ -1,7 +1,7 @@
 import 'dart:core';
 
 import 'package:compairifuel/widgets/user_marker_layer.dart';
-import 'package:compairifuel/fuel_option.dart';
+import 'package:compairifuel/FuelOption.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -204,7 +204,7 @@ class _MapPageState extends State<MapPage> {
             UserMarkerLayer(userLocation: _userLocation!),
             FuelMarkerLayer(gasStationList: nearbyPoiMarkers),
             Padding(
-              padding: EdgeInsets.all(25),
+              padding: const EdgeInsets.all(25),
               // Adjust the padding values as needed
               child: DropdownButton<FuelOption>(
                 iconSize: 50.0,
