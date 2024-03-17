@@ -2,7 +2,7 @@ import 'package:compairifuel/Page.dart' as PageComponent;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
-import 'package:compairifuel/Map.dart';
+import 'package:compairifuel/Map/Map.dart';
 
 import 'Navbar.dart';
 import 'Pagination.dart';
@@ -65,7 +65,9 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme:
+          ColorScheme.fromSeed(seedColor: Colors.blue),
+          // ColorScheme(),
         useMaterial3: true,
       ),
       home: page,

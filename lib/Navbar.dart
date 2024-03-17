@@ -1,8 +1,8 @@
 import 'package:compairifuel/NavItem.dart';
 import 'package:compairifuel/Page.dart' as PageComponent;
-import 'package:compairifuel/Map.dart';
+import 'package:compairifuel/Map/Map.dart';
 import 'package:compairifuel/Pagination.dart';
-import 'package:compairifuel/UserManual.dart';
+import 'package:compairifuel/Manual/UserManual.dart';
 import 'package:flutter/material.dart';
 
 import 'NavIcon.dart';
@@ -29,13 +29,11 @@ class Navbar extends StatefulWidget {
   Navbar({super.key});
 }
 class _Navbar extends State<Navbar> {
-  int index = 0;
+  int index = 1;
 
   @override
   void initState() {
     super.initState();
-
-    // changePage(index);
   }
 
 

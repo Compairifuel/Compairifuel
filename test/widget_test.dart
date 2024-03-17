@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:compairifuel/Navbar.dart';
 import 'package:compairifuel/Pagination.dart';
 import 'package:compairifuel/Page.dart' as PageComponent;
-import 'package:compairifuel/UserManual.dart';
+import 'package:compairifuel/Manual/UserManual.dart';
 import 'package:compairifuel/Main.dart';
 
 
