@@ -13,10 +13,9 @@ class LocationService {
     if (!isLocationServiceEnabled) {
       // TODO
       Geolocator.requestPermission();
+      throw LocationNotEnabledException();
 
     }
-
-    throw LocationNotEnabledException();
   }
 
   Future<bool> _isLocationServiceEnabled() async {
@@ -33,7 +32,7 @@ class LocationService {
 
   void startListeningLocationUpdates(BuildContext context,void Function(Position) onLocationUpdate){
     // TODO
-    if(!context.mounted) dispose();
+    // if(!context.mounted) dispose();
 
      _locationSubscription = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
