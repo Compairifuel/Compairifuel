@@ -12,6 +12,10 @@
 pubspec.lock
 *.lock
 migrate_working_dir/
+*.cmake
+*.cc
+*.swift
+*.h
 
 # IntelliJ related
 *.iml
