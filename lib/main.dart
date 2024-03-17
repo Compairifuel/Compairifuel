@@ -65,69 +65,34 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme:
-          ColorScheme.fromSeed(seedColor: Colors.blue),
-          // ColorScheme(),
-        useMaterial3: true,
+        colorScheme: const ColorScheme(
+              primary: Color(0xFF004c97),
+              onPrimary: Color(0xFF166cc2),
+              primaryContainer: Color(0xFF76b1ec),
+              onPrimaryContainer: Color(0xFFb9d7f5),
+              secondary: Color(0xFF009700),
+              onSecondary: Color(0xFF16c21f),
+              secondaryContainer: Color(0xFF76ec7c),
+              onSecondaryContainer: Color(0xFFb9f5bc),
+
+
+              brightness: Brightness.light,
+              error: Color(0xFF880000),
+              onError: Color(0xFFcc0000),
+              background: Color(0x00000000),
+              onBackground: Color(0x00000000),
+              surface: Color(0x00000000),
+              onSurface: Color(0x00000000),
+          ),
+        textTheme: const TextTheme(
+          titleMedium: TextStyle(fontSize:24,fontWeight: FontWeight.bold,fontFamily: "Roboto",fontFamilyFallback: ["Roboto Serif"]),
+          bodyMedium: TextStyle(fontSize: 15,fontWeight: FontWeight.normal,fontFamily: "Roboto",fontFamilyFallback: ["Roboto Serif"]),
+          labelMedium: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,fontFamily: "Roboto",fontFamilyFallback: ["Roboto Serif"]),
+          bodySmall: TextStyle(fontSize: 12,fontWeight: FontWeight.normal,fontFamily: "Roboto",fontFamilyFallback: ["Roboto Serif"]),
+        ),
+        useMaterial3: false,
       ),
       home: page,
     );
   }
 }
-
-// class MyHomePage extends StatefulWidget {
-//   const MyHomePage({super.key, required this.title});
-//
-//   // This widget is the home page of your application. It is stateful, meaning
-//   // that it has a State object (defined below) that contains fields that affect
-//   // how it looks.
-//
-//   // This class is the configuration for the state. It holds the values (in this
-//   // case the title) provided by the parent (in this case the App widget) and
-//   // used by the build method of the State. Fields in a Widget subclass are
-//   // always marked "final".
-//
-//   final String title;
-//
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
-//
-// class _MyHomePageState extends State<MyHomePage> {
-//   int index = 0;
-//
-//   final List<Widget> pages = [
-//     const MapPage(title: 'Map'),
-//     const UserManualPage(title: 'User manual'),
-//   ];
-//
-//
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: const Color(0xFF004c97),
-//         currentIndex: index,
-//         onTap: (int index) => setState(() => this.index = index),
-//         items: [
-//           BottomNavigationBarItem(
-//             icon: Image.asset("assets/images/map.png", width: 35, height: 35),
-//             label: 'Map',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Image.asset("assets/images/questions.png",
-//                 width: 35, height: 35),
-//             label: 'Manual',
-//           )
-//         ],
-//       ),
-//       body: IndexedStack(
-//         index: index,
-//         children: pages,
-//       ),
-//     );
-//   }
-// }
-
-// TODO Refactor Data Code Parts
