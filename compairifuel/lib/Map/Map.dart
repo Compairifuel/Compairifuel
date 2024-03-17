@@ -40,8 +40,16 @@ class _MapState extends State<Map> {
     widget._locationService.checkLocationAndSendNotification().onError(
             (e, _) async => {
 
-              if(await Navigator.push(context, MaterialPageRoute(builder: (context) => enableLocation()))) widget._locationService.checkLocationAndSendNotification(),
+              if(await Navigator.push(context, MaterialPageRoute(builder: (context) => const enableLocation()))) widget._locationService.checkLocationAndSendNotification(),
             });
+
+    widget._locationService.startListeningLocationUpdates(context,
+            (Position position) {
+      if(LatLng(position.latitude,position.longitude) != userLocation) {
+        setUserLocationState(LatLng(position.latitude, position.longitude));
+      }
+    });
+
 
     //TODO
   }
@@ -54,7 +62,6 @@ class _MapState extends State<Map> {
   }
 
   void setUserLocationState(LatLng position){
-    // debugDumpApp();
     setState(() {
     userLocation = position;
     });
@@ -70,9 +77,7 @@ class _MapState extends State<Map> {
   Widget build(BuildContext context){
 
     //FIXME: This is a temporary solution to get the map to update the user location and not thow an error for state not mounted.
-    widget._locationService.startListeningLocationUpdates(context,(Position position) {
-      if(LatLng(position.latitude,position.longitude) != userLocation) setUserLocationState(LatLng(position.latitude,position.longitude));
-    });
+
 
     return Expanded(
       child: FlutterMap(
