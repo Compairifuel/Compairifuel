@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -14,6 +15,8 @@ class LocationService {
       Geolocator.requestPermission();
 
     }
+
+    throw LocationNotEnabledException();
   }
 
   Future<bool> _isLocationServiceEnabled() async {
@@ -28,9 +31,11 @@ class LocationService {
   //
   // }
 
-  void startListeningLocationUpdates(void Function(Position) onLocationUpdate){
+  void startListeningLocationUpdates(BuildContext context,void Function(Position) onLocationUpdate){
     // TODO
-    _locationSubscription = Geolocator.getPositionStream(
+    if(!context.mounted) dispose();
+
+     _locationSubscription = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 10,)
@@ -41,4 +46,7 @@ class LocationService {
   void dispose(){
     _locationSubscription!.cancel();
   }
+}
+
+class LocationNotEnabledException {
 }
