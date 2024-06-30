@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Response;
 
 @Path("")
 public class GasStationController {
+
     @GET
     @Path("/gasStations/{lat}/{lng}")
     @Produces(MediaType.APPLICATION_JSON)
