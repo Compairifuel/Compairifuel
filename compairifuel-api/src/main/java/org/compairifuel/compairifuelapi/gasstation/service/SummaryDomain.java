@@ -1,5 +1,8 @@
 package org.compairifuel.compairifuelapi.gasstation.service;
 
+import lombok.Data;
+
+@Data
 public class SummaryDomain {
     private String queryType;
     private int queryTime;

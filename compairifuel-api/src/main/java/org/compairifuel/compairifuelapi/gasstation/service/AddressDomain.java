@@ -1,5 +1,8 @@
 package org.compairifuel.compairifuelapi.gasstation.service;
 
+import lombok.Data;
+
+@Data
 public class AddressDomain {
     private String streetNumber;
     private String streetName;
