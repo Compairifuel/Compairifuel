@@ -23,7 +23,7 @@ public class GasStationController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGasStations(@PathParam("lat") double latitude, @PathParam("lng") double longitude) {
 
-        List<GasStationResponseDTO> gasStationEntities = gasStationService.getGasStations(latitude, longitude, 2500);
+        List<GasStationResponseDTO> gasStationEntities = gasStationService.getGasStations(latitude, longitude, 25000);
         return Response.ok().entity(gasStationEntities).build();
     }
 }
