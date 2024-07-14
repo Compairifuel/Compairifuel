@@ -13,6 +13,7 @@ import lombok.Data;
 import org.compairifuel.compairifuelapi.gasstation.presentation.GasStationResponseDTO;
 import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 import org.compairifuel.compairifuelapi.utils.presentation.PositionDTO;
+import org.compairifuel.compairifuelapi.utils.service.ServiceUtils;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,39 +25,37 @@ public class GasStationServiceImpl implements IGasStationService {
     private final Logger logger = Logger.getLogger(this.getClass().getName());
 
     private IEnvConfig envConfig;
+    private ServiceUtils serviceUtils;
 
     @Inject
     public void setEnvConfig(IEnvConfig envConfig) {
         this.envConfig = envConfig;
     }
 
+    @Inject
+    public void setServiceUtils(ServiceUtils serviceUtils) {
+        this.serviceUtils = serviceUtils;
+    }
+
     @Override
     public List<GasStationResponseDTO> getGasStations(double latitude, double longitude, int radius) {
         String apiKey = envConfig.getEnv("API_KEY");
 
-        @Cleanup Client client = ClientBuilder.newClient();
-        MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
-        headers.add("Content-Type", "application/json");
-        headers.add("Accept", "*/*");
-        WebTarget target = client.target("https://api.tomtom.com/search/2/nearbySearch/.json")
-                .queryParam("key", apiKey)
-                .queryParam("lat", latitude)
-                .queryParam("lon", longitude)
-                .queryParam("radius", radius)
-                .queryParam("categorySet", 7311)
-                .queryParam("relatedPois", "off")
-                .queryParam("limit", 100)
-                .queryParam("countrySet", "NLD,BEL,DEU")
-                .queryParam("minFuzzyLevel", 2)
-                .queryParam("maxFuzzyLevel", 4);
-        @Cleanup Response response = target.request(MediaType.APPLICATION_JSON).headers(headers).get(Response.class);
-        if(response.getStatus() != 200) {
-            logger.severe("Failed to get gas stations from TomTom API. Status code: " + response.getStatus());
-            throw new RuntimeException("Failed to get gas stations from TomTom API. Status code: " + response.getStatus());
-        }
-        GasStationDomain gasStationSearch = response.readEntity(GasStationDomain.class);
+        MultivaluedHashMap<String, Object> queryParams = new MultivaluedHashMap<>();
+        queryParams.add("key", apiKey);
+        queryParams.add("lat", latitude);
+        queryParams.add("lon", longitude);
+        queryParams.add("radius", radius);
+        queryParams.add("categorySet", 7311);
+        queryParams.add("relatedPois", "off");
+        queryParams.add("limit", 100);
+        queryParams.add("countrySet", "NLD,BEL,DEU");
+        queryParams.add("minFuzzyLevel", 2);
+        queryParams.add("maxFuzzyLevel", 4);
 
-        // https://api.tomtom.com/search/2/nearbySearch/.json?key=TTkngWVhaw2tDzCPcd7EUMx7WAkY6I8x&lat=0&lon=0&radius=20&categorySet=7311&relatedPois=off&limit=100&countrySet=NLD,BEL,DEU&minFuzzyLevel=2&maxFuzzyLevel=4
+        GasStationDomain gasStationSearch = serviceUtils.sendRequest(
+                "https://api.tomtom.com/search/2/nearbySearch/.json", queryParams, GasStationDomain.class
+        );
 
         return gasStationSearch.getResults().stream().map(this::mapToGasStationResponseDTO).collect(Collectors.toList());
     }
