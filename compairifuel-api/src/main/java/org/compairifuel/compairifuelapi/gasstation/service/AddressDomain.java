@@ -18,4 +18,5 @@ public class AddressDomain {
     private String freeformAddress;
     private String localName;
     private String municipalitySubdivision;
+    private String neighbourhood;
 }
