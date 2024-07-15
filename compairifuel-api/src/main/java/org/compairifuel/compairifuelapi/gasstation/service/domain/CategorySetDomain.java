@@ -1,4 +1,4 @@
-package org.compairifuel.compairifuelapi.gasstation.service;
+package org.compairifuel.compairifuelapi.gasstation.service.domain;
 
 import lombok.Data;
 
