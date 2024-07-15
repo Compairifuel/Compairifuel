@@ -5,6 +5,7 @@ import org.compairifuel.compairifuelapi.utils.presentation.PositionDTO;
 
 import java.util.List;
 
+
 @Data
 public class GasStationResponseDTO {
     private PositionDTO position;

@@ -27,6 +27,12 @@ import java.util.logging.Logger;
 public class FuelPriceServiceImpl implements IFuelPriceService {
     private IEnvConfig envConfig;
     private IServiceHttpClient serviceHttpClient;
+    private IFuelPriceServiceAggregatorAdapter fuelPriceServiceAggregatorAdapter;
+
+    @Inject
+    public void setFuelPriceServiceAggregatorAdapter(IFuelPriceServiceAggregatorAdapter fuelPriceServiceAggregatorAdapter) {
+        this.fuelPriceServiceAggregatorAdapter = fuelPriceServiceAggregatorAdapter;
+    }
 
     @Inject
     public void setServiceHttpClient(IServiceHttpClient serviceHttpClient) {
@@ -36,6 +42,16 @@ public class FuelPriceServiceImpl implements IFuelPriceService {
     @Inject
     public void setEnvConfig(IEnvConfig envConfig) {
         this.envConfig = envConfig;
+    }
+
+    @Override
+    public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) {
+        try {
+            return fuelPriceServiceAggregatorAdapter.getPrices(fuelType, address);
+        } catch (Exception e) {
+            log.info("Error while getting prices: " + e.getMessage());
+        }
+        return List.of();
     }
 
 //    @Deprecated
@@ -50,36 +66,36 @@ public class FuelPriceServiceImpl implements IFuelPriceService {
 //        return List.of();
 //    }
 
-    //   @Deprecated
-    @Override
-    public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) {
-        String apiKey = envConfig.getEnv("API_KEY");
-
-        MultivaluedHashMap<String, Object> queryParams = new MultivaluedHashMap<>();
-        queryParams.add("key", apiKey);
-        GasStationDomain gasStationSearch = serviceHttpClient.sendRequest("https://api.tomtom.com/search/2/poiSearch/" + address + ".json", queryParams, GasStationDomain.class);
-
-        Optional<ResultDomain> dataSourceSearch = gasStationSearch.getResults().stream().filter(e -> e.getDataSources() != null && e.getDataSources().getFuelPrice().toString() != null).findFirst();
-
-        if (dataSourceSearch.isPresent()) {
-            queryParams = new MultivaluedHashMap<>();
-            queryParams.add("key", apiKey);
-            queryParams.add("fuelPrice", dataSourceSearch.get().getDataSources().getFuelPrice().toString());
-            FuelPriceDomain fuelPriceSearch = serviceHttpClient.sendRequest("https://api.tomtom.com/search/2/fuelPrice.json", queryParams, FuelPriceDomain.class);
-            if (fuelPriceSearch != null) {
-                log.info(fuelPriceSearch.toString());
-
-                List<FuelPriceResponseDTO> fuelPriceResponseDTOList = new ArrayList<>();
-                fuelPriceResponseDTOList.add(new FuelPriceResponseDTO(new PositionDTO(dataSourceSearch.get().getPosition().getLat(), dataSourceSearch.get().getPosition().getLon()), address, fuelPriceSearch.getFuels().stream().filter(e -> e.getType().equals(fuelType)).findFirst().get().getPrice().get(0).getValue()));
-
-                return fuelPriceResponseDTOList;
-            } else {
-                log.info("Fuel price not found");
-            }
-        } else {
-            log.info("No Data Source present " + gasStationSearch.getSummary());
-        }
-
-        return List.of();
-    }
+//    @Deprecated
+//    @Override
+//    public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) {
+//        String apiKey = envConfig.getEnv("API_KEY");
+//
+//        MultivaluedHashMap<String, Object> queryParams = new MultivaluedHashMap<>();
+//        queryParams.add("key", apiKey);
+//        GasStationDomain gasStationSearch = serviceHttpClient.sendRequest("https://api.tomtom.com/search/2/poiSearch/" + address + ".json", queryParams, GasStationDomain.class);
+//
+//        Optional<ResultDomain> dataSourceSearch = gasStationSearch.getResults().stream().filter(e -> e.getDataSources() != null && e.getDataSources().getFuelPrice().toString() != null).findFirst();
+//
+//        if (dataSourceSearch.isPresent()) {
+//            queryParams = new MultivaluedHashMap<>();
+//            queryParams.add("key", apiKey);
+//            queryParams.add("fuelPrice", dataSourceSearch.get().getDataSources().getFuelPrice().toString());
+//            FuelPriceDomain fuelPriceSearch = serviceHttpClient.sendRequest("https://api.tomtom.com/search/2/fuelPrice.json", queryParams, FuelPriceDomain.class);
+//            if (fuelPriceSearch != null) {
+//                log.info(fuelPriceSearch.toString());
+//
+//                List<FuelPriceResponseDTO> fuelPriceResponseDTOList = new ArrayList<>();
+//                fuelPriceResponseDTOList.add(new FuelPriceResponseDTO(new PositionDTO(dataSourceSearch.get().getPosition().getLat(), dataSourceSearch.get().getPosition().getLon()), address, fuelPriceSearch.getFuels().stream().filter(e -> e.getType().equals(fuelType)).findFirst().get().getPrice().get(0).getValue()));
+//
+//                return fuelPriceResponseDTOList;
+//            } else {
+//                log.info("Fuel price not found");
+//            }
+//        } else {
+//            log.info("No Data Source present " + gasStationSearch.getSummary());
+//        }
+//
+//        return List.of();
+//    }
 }
