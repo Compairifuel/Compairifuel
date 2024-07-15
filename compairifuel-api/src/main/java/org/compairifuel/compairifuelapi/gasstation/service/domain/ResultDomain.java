@@ -1,7 +1,6 @@
-package org.compairifuel.compairifuelapi.gasstation.service;
+package org.compairifuel.compairifuelapi.gasstation.service.domain;
 
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.List;
 
