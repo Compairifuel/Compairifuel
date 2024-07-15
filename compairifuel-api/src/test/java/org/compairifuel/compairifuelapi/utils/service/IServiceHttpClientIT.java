@@ -1,14 +1,7 @@
 package org.compairifuel.compairifuelapi.utils.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedHashMap;
-import jakarta.ws.rs.core.Response;
-import lombok.Cleanup;
-import org.compairifuel.compairifuelapi.gasstation.service.GasStationDomain;
+import org.compairifuel.compairifuelapi.gasstation.service.domain.GasStationDomain;
 import org.compairifuel.compairifuelapi.utils.EnvConfigImpl;
 import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("integration-test")
-public class ServiceUtilsIT {
+public class IServiceHttpClientIT {
     private static IEnvConfig envConfig;
-    private ServiceUtils serviceUtils;
+    private IServiceHttpClient serviceHttpClient;
 
     @BeforeAll
     public static void setupAll() {
@@ -31,11 +24,12 @@ public class ServiceUtilsIT {
 
     @BeforeEach
     public void setup() {
-        serviceUtils = new ServiceUtils();
+        serviceHttpClient = new ServiceHttpClientImpl();
     }
 
     @Test
     public void testSendRequestToTomTomAPI() {
+        // Arrange
         String apiKey = envConfig.getEnv("API_KEY");
 
         MultivaluedHashMap<String, Object> queryParams = new MultivaluedHashMap<>();
@@ -50,11 +44,14 @@ public class ServiceUtilsIT {
         queryParams.add("minFuzzyLevel", 2);
         queryParams.add("maxFuzzyLevel", 4);
 
+        // Assert
         assertDoesNotThrow(() -> {
-            GasStationDomain gasStationSearch = serviceUtils.sendRequest(
+            // Act
+            GasStationDomain gasStationSearch = serviceHttpClient.sendRequest(
                     "https://api.tomtom.com/search/2/nearbySearch/.json", queryParams, GasStationDomain.class
             );
 
+            // Assert
             assertNotNull(gasStationSearch);
             assertInstanceOf(GasStationDomain.class, gasStationSearch);
             assertNotNull(gasStationSearch.getSummary());
