@@ -26,16 +26,62 @@ public class DataCSVFuelPriceServiceAdapteeImpl implements IFuelPriceServiceAggr
 
     @Override
     public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) throws IOException {
-        // read from csv as a stream and then search for address in the stream and return the row. from the file data.csv in resources.
         @Cleanup BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("data.csv"))));
 
         List<List<String>> row = br.lines().map(line -> Arrays.asList(line.split(";"))).collect(Collectors.toList());
 
-        return row.subList(1, row.size() - 1).stream().filter(strings -> strings.get(0).equals(address)).map(strings -> {
+        return row.subList(1, row.size() - 1).stream().filter(column -> column.get(0).equals(address)).map(column -> {
             FuelPriceResponseDTO fuelPriceResponseDTO = new FuelPriceResponseDTO();
-            fuelPriceResponseDTO.setAddress(strings.get(0));
-            fuelPriceResponseDTO.setPrice(Double.parseDouble(strings.get(1)));
-            fuelPriceResponseDTO.setPosition(new PositionDTO(Double.parseDouble(strings.get(2)), Double.parseDouble(strings.get(3))));
+            fuelPriceResponseDTO.setAddress(column.get(0));
+            fuelPriceResponseDTO.setPrice(Double.parseDouble(column.get(1)));
+            fuelPriceResponseDTO.setPosition(new PositionDTO(Double.parseDouble(column.get(2)), Double.parseDouble(column.get(3))));
+            return fuelPriceResponseDTO;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FuelPriceResponseDTO> getPrices(String fuelType, double latitude, double longitude) throws IOException {
+        @Cleanup BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("data.csv"))));
+
+        List<List<String>> row = br.lines().map(line -> Arrays.asList(line.split(";"))).collect(Collectors.toList());
+
+        // this is to add a 5m leeway to the latitude and longitude.
+        double circa = 0.00005;
+
+        // 51.9875311
+        // + 0.00005
+        // 51.9875811
+        // 51.9875311 <= 51.9875311 + 0.00005
+
+        // 51.9875311
+        // - 0.00005
+        // 51.9874811
+        // 51.9875311 >= 51.9875311 - 0.00005
+
+        return row.subList(1, row.size() - 1).stream().filter(column -> (Double.parseDouble(column.get(2)) <= (latitude + circa) && Double.parseDouble(column.get(2)) >= (latitude - circa)) && (Double.parseDouble(column.get(3)) <= longitude + circa && Double.parseDouble(column.get(3)) >= longitude - circa)
+        ).map(column -> {
+            FuelPriceResponseDTO fuelPriceResponseDTO = new FuelPriceResponseDTO();
+            fuelPriceResponseDTO.setAddress(column.get(0));
+            fuelPriceResponseDTO.setPrice(Double.parseDouble(column.get(1)));
+            fuelPriceResponseDTO.setPosition(new PositionDTO(Double.parseDouble(column.get(2)), Double.parseDouble(column.get(3))));
+            return fuelPriceResponseDTO;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FuelPriceResponseDTO> getPrices(String fuelType, String address, double latitude, double longitude) throws IOException {
+        @Cleanup BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("data.csv"))));
+
+        List<List<String>> row = br.lines().map(line -> Arrays.asList(line.split(";"))).collect(Collectors.toList());
+
+        // this is to add a 5m leeway to the latitude and longitude.
+        double circa = 0.00005;
+
+        return row.subList(1, row.size() - 1).stream().filter(column -> (Double.parseDouble(column.get(2)) <= latitude + circa && Double.parseDouble(column.get(2)) >= latitude - circa) && (Double.parseDouble(column.get(3)) <= longitude + circa && Double.parseDouble(column.get(3)) >= longitude - circa) || column.get(0).equals(address)).map(column -> {
+            FuelPriceResponseDTO fuelPriceResponseDTO = new FuelPriceResponseDTO();
+            fuelPriceResponseDTO.setAddress(column.get(0));
+            fuelPriceResponseDTO.setPrice(Double.parseDouble(column.get(1)));
+            fuelPriceResponseDTO.setPosition(new PositionDTO(Double.parseDouble(column.get(2)), Double.parseDouble(column.get(3))));
             return fuelPriceResponseDTO;
         }).collect(Collectors.toList());
     }
