@@ -2,6 +2,7 @@ package org.compairifuel.compairifuelapi.fuelprice.service;
 
 import jakarta.enterprise.inject.Default;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
@@ -46,12 +47,17 @@ public class FuelPriceServiceImpl implements IFuelPriceService {
 
     @Override
     public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) {
-        try {
-            return fuelPriceServiceAggregatorAdapter.getPrices(fuelType, address);
-        } catch (Exception e) {
-            log.info("Error while getting prices: " + e.getMessage());
-        }
-        return List.of();
+        return fuelPriceServiceAggregatorAdapter.getPrices(fuelType, address);
+    }
+
+    @Override
+    public List<FuelPriceResponseDTO> getPrices(String fuelType, double latitude, double longitude) {
+        return fuelPriceServiceAggregatorAdapter.getPrices(fuelType, latitude, longitude);
+    }
+
+    @Override
+    public List<FuelPriceResponseDTO> getPrices(String fuelType, String address, double latitude, double longitude) {
+        return fuelPriceServiceAggregatorAdapter.getPrices(fuelType, address, latitude, longitude);
     }
 
 //    @Deprecated
