@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface IFuelPriceService {
     List<FuelPriceResponseDTO> getPrices(String fuelType, String address);
+    List<FuelPriceResponseDTO> getPrices(String fuelType, double latitude, double longitude);
+    List<FuelPriceResponseDTO> getPrices(String fuelType, String address, double latitude, double longitude);
 }
