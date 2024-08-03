@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface IFuelPriceServiceAggregatorAdapter {
-    List<FuelPriceResponseDTO> getPrices(String fuelType, String address) throws IOException;
-    List<FuelPriceResponseDTO> getPrices(String fuelType, double latitude, double longitude) throws IOException;
-    List<FuelPriceResponseDTO> getPrices(String fuelType, String address, double latitude, double longitude) throws IOException;
+    List<FuelPriceResponseDTO> getPrices(String fuelType, String address);
+    List<FuelPriceResponseDTO> getPrices(String fuelType, double latitude, double longitude);
+    List<FuelPriceResponseDTO> getPrices(String fuelType, String address, double latitude, double longitude);
 }
