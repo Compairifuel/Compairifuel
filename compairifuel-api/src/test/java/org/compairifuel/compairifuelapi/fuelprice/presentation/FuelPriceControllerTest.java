@@ -2,10 +2,10 @@ package org.compairifuel.compairifuelapi.fuelprice.presentation;
 
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
+import org.compairifuel.compairifuelapi.authorization.presentation.AuthCodeValidatorController;
 import org.compairifuel.compairifuelapi.fuelprice.service.IFuelPriceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -15,13 +15,18 @@ import static org.mockito.Mockito.*;
 class FuelPriceControllerTest {
     private final FuelPriceController sut = new FuelPriceController();
     private IFuelPriceService fuelPriceService;
+    private AuthCodeValidatorController authCodeValidatorController;
     private final int HTTP_OK = 200;
 
     @BeforeEach
     void setUp() {
-        fuelPriceService = Mockito.mock(IFuelPriceService.class);
+        fuelPriceService = mock(IFuelPriceService.class);
+        authCodeValidatorController = mock(AuthCodeValidatorController.class);
 
         sut.setFuelPriceService(fuelPriceService);
+        sut.setAuthCodeValidatorController(authCodeValidatorController);
+
+        when(authCodeValidatorController.authenticateToken(anyString())).thenReturn(true);
     }
 
     @Test
@@ -35,7 +40,7 @@ class FuelPriceControllerTest {
         // Assert
         assertDoesNotThrow(() -> {
             // Act
-            Response response = sut.getPrices(fuelType, address);
+            Response response = sut.getPrices(fuelType, address, "Bearer token");
 
             // Assert
             verify(fuelPriceService).getPrices(fuelType, address);
@@ -59,7 +64,7 @@ class FuelPriceControllerTest {
         // Assert
         Exception ex = assertThrows(NotFoundException.class, () -> {
             // Act
-            sut.getPrices(fuelType, address);
+            sut.getPrices(fuelType, address, "Bearer token");
         });
         assertEquals(exceptionMessage, ex.getMessage());
     }
@@ -76,7 +81,7 @@ class FuelPriceControllerTest {
         // Assert
         assertDoesNotThrow(() -> {
             // Act
-            Response response = sut.getPrices(fuelType, latitude, longitude);
+            Response response = sut.getPrices(fuelType, latitude, longitude,"Bearer token");
 
             // Assert
             verify(fuelPriceService).getPrices(fuelType, latitude, longitude);
@@ -101,7 +106,7 @@ class FuelPriceControllerTest {
         // Assert
         Exception ex = assertThrows(NotFoundException.class, () -> {
             // Act
-            sut.getPrices(fuelType, latitude, longitude);
+            sut.getPrices(fuelType, latitude, longitude, "Bearer token");
         });
         assertEquals(exceptionMessage, ex.getMessage());
     }
@@ -119,7 +124,7 @@ class FuelPriceControllerTest {
         // Assert
         assertDoesNotThrow(() -> {
             // Act
-            Response response = sut.getPrices(fuelType, address, latitude, longitude);
+            Response response = sut.getPrices(fuelType, address, latitude, longitude, "Bearer token");
 
             // Assert
             verify(fuelPriceService).getPrices(fuelType, address, latitude, longitude);
@@ -145,7 +150,7 @@ class FuelPriceControllerTest {
         // Assert
         Exception ex = assertThrows(NotFoundException.class, () -> {
             // Act
-            sut.getPrices(fuelType, address, latitude, longitude);
+            sut.getPrices(fuelType, address, latitude, longitude, "Bearer token");
         });
         assertEquals(exceptionMessage, ex.getMessage());
     }
