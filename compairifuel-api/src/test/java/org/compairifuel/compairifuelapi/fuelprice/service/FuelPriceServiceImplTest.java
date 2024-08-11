@@ -1,6 +1,7 @@
 package org.compairifuel.compairifuelapi.fuelprice.service;
 
 import jakarta.ws.rs.NotFoundException;
+import org.compairifuel.compairifuelapi.fuelprice.mapper.IFuelPriceMapper;
 import org.compairifuel.compairifuelapi.fuelprice.presentation.FuelPriceResponseDTO;
 import org.compairifuel.compairifuelapi.utils.presentation.PositionDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FuelPriceServiceImplTest {
     private final FuelPriceServiceImpl sut = new FuelPriceServiceImpl();
     private IFuelPriceServiceAggregatorAdapter fuelPriceServiceAggregatorAdaptee;
+
 
     @BeforeEach
     void setUp() {
