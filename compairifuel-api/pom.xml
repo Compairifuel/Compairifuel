@@ -152,21 +152,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M4</version>
-                    <configuration>
-                        <groups>integration-test</groups>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>integration-test</goal>
-                                <goal>verify</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
                 </plugin>
@@ -188,5 +173,27 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!--
+            The pluginManagement is the correct way to define the version of a plugin and the configuration bit.
+            To bind a plugin to a life cycle you have to use the second part.
+            https://stackoverflow.com/questions/27160123/maven-failsafe-not-running-tests
+            -->
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M4</version>
+                <configuration>
+                    <groups>integration-test</groups>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
