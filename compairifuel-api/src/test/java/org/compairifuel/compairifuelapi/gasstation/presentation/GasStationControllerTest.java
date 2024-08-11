@@ -2,6 +2,7 @@ package org.compairifuel.compairifuelapi.gasstation.presentation;
 
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
+import org.compairifuel.compairifuelapi.authorization.presentation.AuthCodeValidatorController;
 import org.compairifuel.compairifuelapi.gasstation.service.IGasStationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,13 +15,18 @@ import static org.mockito.Mockito.*;
 class GasStationControllerTest {
     private final GasStationController sut = new GasStationController();
     private IGasStationService gasStationService;
+    private AuthCodeValidatorController authCodeValidatorController;
     private final int HTTP_OK = 200;
 
     @BeforeEach
     void setUp() {
         gasStationService = mock(IGasStationService.class);
+        authCodeValidatorController = mock(AuthCodeValidatorController.class);
 
         sut.setGasStationService(gasStationService);
+        sut.setAuthCodeValidatorController(authCodeValidatorController);
+
+        when(authCodeValidatorController.authenticateToken(anyString())).thenReturn(true);
     }
 
     @Test
@@ -31,10 +37,11 @@ class GasStationControllerTest {
         List<GasStationResponseDTO> gasStationResponseDTOList = List.of(new GasStationResponseDTO());
         when(gasStationService.getGasStations(latitude, longitude, 25000)).thenReturn(gasStationResponseDTOList);
 
+
         // Assert
         assertDoesNotThrow(() -> {
             // Act
-            Response response = sut.getGasStations(latitude, longitude);
+            Response response = sut.getGasStations(latitude, longitude, "Bearer token");
 
             // Assert
             verify(gasStationService).getGasStations(latitude, longitude, 25000);
@@ -58,7 +65,7 @@ class GasStationControllerTest {
         // Assert
         Exception ex = assertThrows(NotFoundException.class,() -> {
             // Act
-            sut.getGasStations(latitude, longitude);
+            sut.getGasStations(latitude, longitude, "Bearertoken");
         });
         assertEquals(exceptionMessage, ex.getMessage());
     }
