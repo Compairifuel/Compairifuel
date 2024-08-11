@@ -26,8 +26,8 @@ import java.util.logging.Logger;
 @Log(topic = "FuelPriceServiceImpl")
 @Default
 public class FuelPriceServiceImpl implements IFuelPriceService {
-    private IEnvConfig envConfig;
-    private IServiceHttpClient serviceHttpClient;
+//    private IEnvConfig envConfig;
+//    private IServiceHttpClient serviceHttpClient;
     private IFuelPriceServiceAggregatorAdapter fuelPriceServiceAggregatorAdapter;
 
     @Inject
@@ -35,15 +35,15 @@ public class FuelPriceServiceImpl implements IFuelPriceService {
         this.fuelPriceServiceAggregatorAdapter = fuelPriceServiceAggregatorAdapter;
     }
 
-    @Inject
-    public void setServiceHttpClient(IServiceHttpClient serviceHttpClient) {
-        this.serviceHttpClient = serviceHttpClient;
-    }
-
-    @Inject
-    public void setEnvConfig(IEnvConfig envConfig) {
-        this.envConfig = envConfig;
-    }
+//    @Inject
+//    public void setServiceHttpClient(IServiceHttpClient serviceHttpClient) {
+//        this.serviceHttpClient = serviceHttpClient;
+//    }
+//
+//    @Inject
+//    public void setEnvConfig(IEnvConfig envConfig) {
+//        this.envConfig = envConfig;
+//    }
 
     @Override
     public List<FuelPriceResponseDTO> getPrices(String fuelType, String address) {
