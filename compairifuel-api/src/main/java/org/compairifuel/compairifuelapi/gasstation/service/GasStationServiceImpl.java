@@ -5,7 +5,6 @@ import jakarta.inject.Inject;
 import lombok.Data;
 import lombok.extern.java.Log;
 import org.compairifuel.compairifuelapi.gasstation.presentation.GasStationResponseDTO;
-import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class GasStationServiceImpl implements IGasStationService {
     private IGasStationsServiceAggregatorAdapter gasStationsServiceAggregatorAdapter;
 
     @Inject
-    public void setTomTomGasStationServiceAdaptee(IGasStationsServiceAggregatorAdapter gasStationsServiceAggregatorAdapter) {
+    public void setGasStationsServiceAggregatorAdapter(IGasStationsServiceAggregatorAdapter gasStationsServiceAggregatorAdapter) {
         this.gasStationsServiceAggregatorAdapter = gasStationsServiceAggregatorAdapter;
     }
 
