@@ -4,7 +4,7 @@ class Logo extends StatelessWidget {
   final String image;
 
   const Logo(
-      {super.key, this.image = "assets/images/LogoComparifuelPrimary.svg"});
+      {super.key, this.image = "assets/images/logo_compairifuel_primary.png"});
 
   @override
   Widget build(BuildContext context) {
