@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:compairifuel/src/global/extension/localization.dart';
 import 'package:compairifuel/src/global/ui/widgets/base_screen.dart';
 import 'package:compairifuel/src/global/ui/widgets/header.dart';
-import 'package:compairifuel/src/global/ui/widgets/logo.dart';
 import 'package:compairifuel/src/global/ui/widgets/nav_bar.dart';
 import 'package:compairifuel/src/global/ui/widgets/header_title.dart';
 
@@ -18,7 +17,6 @@ class UserManualScreen extends StatelessWidget {
     return BaseScreen(
         navBar: const NavBar(),
         header: Header(
-            logo: const Logo(image: "assets/images/background.png"),
             title: HeaderTitle(text: localization.usermanualTitle)),
         page: _UserManualPage());
   }
