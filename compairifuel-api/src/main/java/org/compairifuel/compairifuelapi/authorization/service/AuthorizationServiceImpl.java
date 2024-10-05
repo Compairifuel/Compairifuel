@@ -14,7 +14,6 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.compairifuel.compairifuelapi.authorization.presentation.AccessTokenResponseDTO;
 import org.compairifuel.compairifuelapi.authorization.service.domain.AccessTokenDomain;
 import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 
@@ -28,8 +27,6 @@ import java.util.Date;
 public class AuthorizationServiceImpl implements IAuthorizationService {
     private IEnvConfig envConfig;
     private final String TOKEN_TYPE = "Bearer";
-//    private final String code_challenge = "2369850d2ab1338387f111660c108329b2cc66ca5f30e872ef7ca24d79b66347"; // SHA256 hash
-//    private final String code_verifier = "YWJjc2Rhc2Rhc2Fkc2Fkc2Fkc2FkZHNhc2Fkc2Fkc2Rhc2Rhc2Fkc2Fkc2Fkc2Fkc2Fkc2Fkc2Fk"; // Base64-URL-encoded
 
     @Inject
     public void setEnvConfig(IEnvConfig envConfig) {
@@ -37,7 +34,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
     }
 
     @Override
-    public URI getAuthorizationCode(String grantType, String redirectUri, String codeChallenge, String state) {
+    public URI getAuthorizationCode(String responseType, String redirectUri, String codeChallenge, String state) {
         /* TODO:
          -  if it is a valid redirect URL for this application. (does not match one of the registered redirect URLs for the application)
          -  if invalid redirect URL then return error and not redirect.
@@ -46,7 +43,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
 
         UriBuilder redirectToURI = UriBuilder.fromUri(redirectUri);
 
-        if (!redirectToURI.clone().replaceQuery("").build().toString().equals("abc://a")) {
+        if (!(redirectToURI.clone().replaceQuery("").build().toString().equals("https://oauth.pstmn.io/v1/callback")||redirectToURI.clone().replaceQuery("").build().toString().equals("http://localhost:8080/oauth/callback"))) {
             log.warning("The redirect url isn't whitelisted!");
             throw new ForbiddenException();
         }
@@ -64,13 +61,13 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
                 .claim("state", state)
                 .claim("code_challenge", codeChallenge)
                 .claim("redirect_uri", redirectUri)
-                .claim("grant_type", grantType)
+                .claim("grant_type", responseType)
                 .signWith(key)
                 .compact();
 
         return redirectToURI
             .queryParam("state", state)
-            .queryParam("authorization_code", authorizationCode)
+            .queryParam("code", authorizationCode)
             .build();
     }
 
@@ -198,7 +195,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
         response.setAccessToken(accessToken);
         response.setExpiresIn(expiresIn);
         response.setTokenType(TOKEN_TYPE);
-        response.setRefreshToken(refreshToken);
+        response.setRefreshToken(newRefreshToken);
 
         return response;
     }
