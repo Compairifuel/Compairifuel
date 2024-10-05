@@ -14,7 +14,6 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.UriBuilder;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.compairifuel.compairifuelapi.authorization.presentation.AccessTokenResponseDTO;
 import org.compairifuel.compairifuelapi.authorization.service.domain.AccessTokenDomain;
 import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 
@@ -38,7 +37,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
     public URI getAuthorizationCode(String grantType, String redirectUri, String codeChallenge, String state) {
         UriBuilder redirectToURI = UriBuilder.fromUri(redirectUri);
 
-        if (!redirectToURI.clone().replaceQuery("").build().toString().equals("abc://a")) {
+        if (!(redirectToURI.clone().replaceQuery("").build().toString().equals("https://oauth.pstmn.io/v1/callback")||redirectToURI.clone().replaceQuery("").build().toString().equals("http://localhost:8080/oauth/callback"))) {
             log.warning("The redirect url isn't whitelisted!");
             throw new ForbiddenException();
         }
@@ -62,7 +61,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
 
         return redirectToURI
             .queryParam("state", state)
-            .queryParam("authorization_code", authorizationCode)
+            .queryParam("code", authorizationCode)
             .build();
     }
 
@@ -177,7 +176,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
         response.setAccessToken(accessToken);
         response.setExpiresIn(expiresIn);
         response.setTokenType(TOKEN_TYPE);
-        response.setRefreshToken(refreshToken);
+        response.setRefreshToken(newRefreshToken);
 
         return response;
     }
