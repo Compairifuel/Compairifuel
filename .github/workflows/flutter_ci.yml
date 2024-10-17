@@ -1,0 +1,55 @@
+name: Flutter App CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - refactor
+    paths:
+      - compairifuel/**
+  pull_request:
+    paths:
+      - compairifuel/**
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: './compairifuel'
+
+env:
+  FLUTTER_VERSION: "3.24.3"
+  FLUTTER_CHANNEL: "stable"
+  FLUTTER_CACHE: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install specific version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Dart format
+        run: dart format -o none --set-exit-if-changed .
+      - name: Flutter analyze
+        run: flutter analyze
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install specific version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Flutter test
+        run: flutter test --coverage --reporter github --exclude-tags integration
