@@ -1,0 +1,96 @@
+name: Flutter App CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - refactor
+    paths:
+      - compairifuel/**
+  pull_request:
+    paths:
+      - compairifuel/**
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: './compairifuel'
+
+env:
+  FLUTTER_CACHE: true
+  DOTENV_BASE64: ${{ secrets.DOTENV_BASE64 }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter: [ '3.24.3', '' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install ${{ matrix.flutter }}
+        if: matrix.flutter != ''
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter }}
+          channel: "stable"
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Flutter install stable
+        if: matrix.flutter == ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Create dotenv and .env file from GitHub Secrets
+        run: | 
+          if [[ -n "${DOTENV_BASE64}" ]]; then
+              echo -n "${DOTENV_BASE64}" | base64 -d > dotenv
+              echo -n "${DOTENV_BASE64}" | base64 -d > .env
+          else
+              touch .env
+              touch dotenv
+          fi
+        env:
+          DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
+      - name: Dart format
+        run: dart format -o none --set-exit-if-changed .
+      - name: Flutter analyze
+        run: flutter analyze
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter: [ '3.24.3', '' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install ${{ matrix.flutter }}
+        if: matrix.flutter != ''
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter }}
+          channel: "stable"
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Flutter install stable
+        if: matrix.flutter == ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Create dotenv and .env file from GitHub Secrets
+        run: | 
+          if [[ -n "${DOTENV_BASE64}" ]]; then
+              echo -n "${DOTENV_BASE64}" | base64 -d > dotenv
+              echo -n "${DOTENV_BASE64}" | base64 -d > .env
+          else
+              touch .env
+              touch dotenv
+          fi
+        env:
+          DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
+      - name: Flutter test
+        run: flutter test --coverage --reporter github --exclude-tags integration
