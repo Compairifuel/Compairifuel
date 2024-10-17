@@ -1,0 +1,54 @@
+name: Flutter App CI
+
+on:
+  push:
+    branches: [ master, develop, refactor ]
+  pull_request:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Flutter App CI
+    paths:
+      - 'compairifuel/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze project source
+        run: dart analyze
+
+      - name: Run tests
+        run: dart test
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install specific version
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+      - name: Flutter install stable version
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+      - name: Project preparation
+        run: flutter pub get
+      - name: Dart format
+        run: dart format -o none --set-exit-if-changed .
+      - name: Flutter analyze
+        run: flutter analyze
+      - name: Flutter test
+        run: flutter test --coverage --reporter github --no-test-assets --exclude-tags integration
