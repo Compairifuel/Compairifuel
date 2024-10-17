@@ -1,0 +1,52 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - refactor
+    paths:
+      - compairifuel-api/**
+  pull_request:
+    paths:
+      - compairifuel-api/**
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: './compairifuel-api'
+
+env:
+  JAVA_DISTRIBUTION: "oracle"
+  DOTENV_BASE64: ${{ secrets.DOTENV_BASE64 }}
+
+jobs:
+  verify:
+    name: Verify Maven JDK
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '17' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Create dotenv and .env file from GitHub Secrets
+        run: | 
+          mkdir -p src/main/resources
+          if [[ -n "${DOTENV_BASE64}" ]]; then
+              echo -n "${DOTENV_BASE64}" | base64 -d > src/main/resources/dotenv
+              echo -n "${DOTENV_BASE64}" | base64 -d > src/main/resources/.env
+          else
+              touch src/main/resources/.env
+              touch src/main/resources/dotenv
+          fi
+        env:
+          DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
+      - name: Run the Maven verify phase
+        run: mvn --batch-mode --update-snapshots verify
