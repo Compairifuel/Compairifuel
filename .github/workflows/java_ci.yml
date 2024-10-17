@@ -1,0 +1,38 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - refactor
+    paths:
+      - compairifuel-api/**
+  pull_request:
+    paths:
+      - compairifuel-api/**
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: './compairifuel-api'
+
+env:
+  JAVA_DISTRIBUTION: "oracle"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '17', '23' ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Run the Maven verify phase
+        run: mvn --batch-mode --update-snapshots verify
