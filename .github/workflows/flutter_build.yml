@@ -1,0 +1,79 @@
+name: Flutter App Build
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: './compairifuel'
+
+env:
+  FLUTTER_VERSION: "3.24.3"
+  FLUTTER_CHANNEL: "stable"
+  FLUTTER_CACHE: true
+  JAVA_DISTRIBUTION: "oracle"
+  JAVA_VERSION: "17"
+  DOTENV_BASE64: ${{ secrets.DOTENV_BASE64 }}
+
+jobs:
+  build_mobile:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install specific version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Create dotenv and .env file from GitHub Secrets
+        run: | 
+          if [[ -n "${DOTENV_BASE64}" ]]; then
+              echo -n "${DOTENV_BASE64}" | base64 -d > dotenv
+              echo -n "${DOTENV_BASE64}" | base64 -d > .env
+          else
+              touch .env
+              touch dotenv
+          fi
+        env:
+          DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
+      - name: Setup Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Build APK
+        run: flutter build apk --debug --no-pub
+      - name: Build appBundle
+        run: flutter build appbundle --debug --no-pub
+      - name: Build IPA
+        run: flutter build ipa --no-codesign --debug --no-pub
+  build_windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flutter install specific version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: ${{ env.FLUTTER_CACHE }}
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Create dotenv and .env file from GitHub Secrets
+        run: | 
+          if ($env:DOTENV_BASE64) {
+              [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($env:DOTENV_BASE64)) > dotenv
+              [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($env:DOTENV_BASE64)) > .env
+          } else {
+              New-Item -ItemType File -Name ".env"
+              New-Item -ItemType File -Name "dotenv"
+          }
+        env:
+          DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
+      - name: Build Web
+        run: flutter build web --no-pub
+      - name: Build Windows
+        run: flutter build windows --debug --no-pub
