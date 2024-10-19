@@ -20,4 +20,15 @@ class PositionModel {
   LatLng toLatLng() {
     return LatLng(latitude, longitude);
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PositionModel &&
+        other.latitude == latitude &&
+        other.longitude == longitude;
+  }
+
+  @override
+  int get hashCode => latitude.hashCode ^ longitude.hashCode;
 }
+

@@ -29,4 +29,16 @@ class AccessTokenModel {
     };
     return data;
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AccessTokenModel &&
+        other.accessToken == accessToken &&
+        other.tokenType == tokenType &&
+        other.expiresIn == expiresIn &&
+        other.refreshToken == refreshToken;
+  }
+
+  @override
+  int get hashCode => accessToken.hashCode ^ tokenType.hashCode ^ expiresIn.hashCode ^ refreshToken.hashCode;
 }

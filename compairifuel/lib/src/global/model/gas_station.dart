@@ -42,4 +42,18 @@ class GasStationModel {
     };
     return data;
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GasStationModel &&
+        other.position == position &&
+        other.name == name &&
+        other.id == id &&
+        other.address == address &&
+        other.entryPoints == entryPoints &&
+        other.viewport == viewport;
+  }
+
+  @override
+  int get hashCode => position.hashCode ^ name.hashCode ^ id.hashCode ^ address.hashCode ^ entryPoints.hashCode ^ viewport.hashCode;
 }
