@@ -42,6 +42,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   latlong2: 0.9.1
   device_preview: ^1.1.0
+  equatable: ^2.0.3
   flutter_localizations:
     sdk: flutter
   intl: any
@@ -49,6 +50,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mockito: ^5.4.4
+  build_runner: ^2.4.13
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -1,15 +1,16 @@
 import 'package:compairifuel/src/global/model/position.dart';
 import 'package:compairifuel/src/global/typedefs.dart';
+import 'package:equatable/equatable.dart';
 
-class GasStationModel {
-  late final PositionModel position;
-  late final String name;
-  late final String id;
-  late final String address;
-  late final List<PositionModel> entryPoints;
-  late final List<PositionModel> viewport;
+class GasStationModel extends Equatable {
+  final PositionModel position;
+  final String name;
+  final String id;
+  final String address;
+  final List<PositionModel> entryPoints;
+  final List<PositionModel> viewport;
 
-  GasStationModel(
+  const GasStationModel(
       {required this.position,
       required this.name,
       required this.id,
@@ -42,4 +43,8 @@ class GasStationModel {
     };
     return data;
   }
+
+  @override
+  List<Object?> get props =>
+      [position, name, id, address, entryPoints, viewport];
 }

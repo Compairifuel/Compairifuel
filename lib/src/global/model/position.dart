@@ -1,11 +1,12 @@
 import 'package:latlong2/latlong.dart';
 import 'package:compairifuel/src/global/typedefs.dart';
+import 'package:equatable/equatable.dart';
 
-class PositionModel {
-  late final double latitude;
-  late final double longitude;
+class PositionModel extends Equatable {
+  final double latitude;
+  final double longitude;
 
-  PositionModel({required this.latitude, required this.longitude});
+  const PositionModel({required this.latitude, required this.longitude});
 
   factory PositionModel.fromJson(Json json) {
     return PositionModel(
@@ -20,4 +21,7 @@ class PositionModel {
   LatLng toLatLng() {
     return LatLng(latitude, longitude);
   }
+
+  @override
+  List<Object?> get props => [latitude, longitude];
 }
