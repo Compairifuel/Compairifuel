@@ -1,12 +1,13 @@
 import 'package:compairifuel/src/global/typedefs.dart';
+import 'package:equatable/equatable.dart';
 
-class AccessTokenModel {
-  late final String accessToken;
-  late final String tokenType;
-  late final int expiresIn;
-  late final String refreshToken;
+class AccessTokenModel extends Equatable {
+  final String accessToken;
+  final String tokenType;
+  final int expiresIn;
+  final String refreshToken;
 
-  AccessTokenModel(
+  const AccessTokenModel(
       {required this.accessToken,
       required this.tokenType,
       required this.expiresIn,
@@ -29,4 +30,7 @@ class AccessTokenModel {
     };
     return data;
   }
+
+  @override
+  List<Object?> get props => [accessToken, tokenType, expiresIn, refreshToken];
 }
