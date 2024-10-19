@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -69,3 +70,21 @@ final mappedPositionProvider = StreamProvider((ref) {
 
   return ref.watch(positionProvider.selectAsync(mapper)).asStream();
 });
+
+
+extension DebouncerRefExtension on Ref {
+  debounce(Duration duration){
+    debugPrint("Debounce Extension Entered.");
+    bool timerDone = false;
+    Timer timer = Timer(duration, (){
+      timerDone = true;
+      debugPrint("Debounce Time is Done!");
+    });
+    onDispose((){
+      if(timer.isActive & !timerDone){
+        timer.cancel();
+        throw Exception("Cancelled!");
+      }
+    });
+  }
+}

@@ -38,9 +38,16 @@ class _MapPageState extends ConsumerState<MapPage> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     var fuelOption = ref.watch(fuelOptionProvider);
+    debugPrint("1 watch provider");
+    var startTime = DateTime.now();
+    debugPrint("starttime is " + startTime.toString());
+    var a = ref.watch(newProvider);
+    debugPrint(a.toString());
 
     LatLng? deviceLocation = ref.watch(mappedPositionProvider).valueOrNull;
-    var gasStationList = ref.watch(gasStationListProvider).valueOrNull;
+
+   // var gasStationList = ref.watch(gasStationListProvider).valueOrNull;
+    var gasStationList = [];
 
     if (context.mounted && deviceLocation != null && isMapReady) {
       _mapController.move(deviceLocation, _mapController.camera.zoom);
