@@ -1,3 +1,4 @@
+import 'package:compairifuel/src/global/ui/widgets/pop_up_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,47 @@ class MapPage extends ConsumerStatefulWidget {
 class _MapPageState extends ConsumerState<MapPage> {
   final MapController _mapController = MapController();
   bool isMapReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    PopUpService(
+      buttons: [],
+      context: context,
+      padding: const EdgeInsets.all(8.0),
+      childBuilder: (context) {
+        ThemeData theme = Theme.of(context);
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Tankstation Remmerden",
+              style: theme.textTheme.titleMedium?.copyWith(color: Colors.black),
+            ),
+            Text(
+              "1234 Boerenlaan 1b",
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black),
+            ),
+            Text(
+              "Amsterdam AB",
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black),
+            ),
+            Text(
+              "Diesel: €1.542",
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black),
+            ),
+            Text(
+              "Euro95: €1.924",
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
