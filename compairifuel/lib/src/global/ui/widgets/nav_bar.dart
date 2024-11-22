@@ -16,13 +16,13 @@ class NavBar extends StatelessWidget {
     var navItems = items ??
         [
           NavItem(
-              icon: const Icon(Icons.book),
-              name: localization.usermanualTitle,
-              location: () => context.go(AppRoute.manual.path)),
-          NavItem(
               icon: const Icon(Icons.map),
-              name: "Map",
-              location: () => context.go(AppRoute.map.path))
+              name: localization.mapNavText,
+              location: () => context.go(AppRoute.map.path)),
+          NavItem(
+              icon: const Icon(Icons.book),
+              name: localization.usermanualNavText,
+              location: () => context.go(AppRoute.manual.path)),
         ];
 
     MediaQueryData mediaQuery = MediaQuery.of(context);

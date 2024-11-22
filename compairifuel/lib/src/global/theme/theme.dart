@@ -11,28 +11,84 @@ class CompairifuelColors {
   static const Color veryLightGreen = Color(0xFFb9f5bc);
   static const Color darkRed = Color(0xFF880000);
   static const Color red = Color(0xFFcc0000);
+  static const Color white = Colors.white;
+  static const Color grey = Colors.grey;
+  static const Color black = Color(0xFF04070A);
 }
 
-const colorScheme = ColorScheme(
-  primary: CompairifuelColors.darkBlue,
-  onPrimary: CompairifuelColors.blue,
-  primaryContainer: CompairifuelColors.lightBlue,
-  onPrimaryContainer: CompairifuelColors.veryLightBlue,
-  secondary: CompairifuelColors.darkGreen,
-  onSecondary: CompairifuelColors.green,
-  secondaryContainer: CompairifuelColors.lightGreen,
-  onSecondaryContainer: CompairifuelColors.veryLightGreen,
-  brightness: Brightness.light,
-  error: CompairifuelColors.darkRed,
-  onError: CompairifuelColors.red,
-  surface: Color(0x00000000),
-  onSurface: Color(0x00000000),
-);
+ColorScheme _colorScheme(BuildContext context) =>
+    Theme.of(context).colorScheme.copyWith(
+          primary: CompairifuelColors.white,
+          onPrimary: CompairifuelColors.lightBlue,
+          primaryContainer: CompairifuelColors.blue,
+          onPrimaryContainer: CompairifuelColors.veryLightBlue,
+          secondary: CompairifuelColors.darkGreen,
+          onSecondary: CompairifuelColors.lightGreen,
+          secondaryContainer: CompairifuelColors.green,
+          onSecondaryContainer: CompairifuelColors.veryLightGreen,
+          brightness: Brightness.light,
+          error: CompairifuelColors.darkRed,
+          onError: CompairifuelColors.white,
+          surface: CompairifuelColors.darkBlue,
+          onSurface: CompairifuelColors.black,
+        );
 
-final textTheme = const TextTheme().apply(
-    fontFamily: "Roboto",
-    fontFamilyFallback: ["Roboto Serif"],
-    displayColor: Colors.black);
+TextTheme _textTheme(BuildContext context) =>
+    Theme.of(context).textTheme.copyWith().apply(
+          fontFamily: "Roboto",
+          fontFamilyFallback: ["Roboto Serif"],
+          displayColor: CompairifuelColors.black,
+          bodyColor: CompairifuelColors.black,
+        );
+
+ButtonThemeData _buttonTheme(BuildContext context) =>
+    Theme.of(context).buttonTheme.copyWith();
+
+DropdownMenuThemeData _dropdownMenuThemeData(BuildContext context) =>
+    Theme.of(context).dropdownMenuTheme.copyWith(
+          inputDecorationTheme: Theme.of(context).inputDecorationTheme.copyWith(
+                fillColor: CompairifuelColors.white,
+                iconColor: CompairifuelColors.darkBlue,
+                hoverColor: CompairifuelColors.lightBlue,
+                border: const OutlineInputBorder(
+                  borderSide: BorderSide(color: CompairifuelColors.darkBlue),
+                ),
+              ),
+        );
+
+InputDecorationTheme _inputDecorationTheme(BuildContext context) =>
+    Theme.of(context).inputDecorationTheme.copyWith(
+          fillColor: CompairifuelColors.white,
+          iconColor: CompairifuelColors.darkBlue,
+          hoverColor: CompairifuelColors.lightBlue,
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(color: CompairifuelColors.darkBlue),
+          ),
+        );
+
+AppBarTheme _appBarTheme(BuildContext context) =>
+    Theme.of(context).appBarTheme.copyWith(
+          iconTheme: const IconThemeData(
+            color: CompairifuelColors.black,
+          ),
+          actionsIconTheme: const IconThemeData(
+            color: CompairifuelColors.black,
+          ),
+        );
+
+IconThemeData _iconThemeData(BuildContext context) =>
+    Theme.of(context).iconTheme.copyWith(
+          color: CompairifuelColors.black,
+        );
 
 ThemeData getTheme(BuildContext context) => ThemeData.from(
-    colorScheme: colorScheme, textTheme: textTheme, useMaterial3: true);
+      colorScheme: _colorScheme(context),
+      textTheme: _textTheme(context),
+      useMaterial3: true,
+    ).copyWith(
+      inputDecorationTheme: _inputDecorationTheme(context),
+      dropdownMenuTheme: _dropdownMenuThemeData(context),
+      buttonTheme: _buttonTheme(context),
+      appBarTheme: _appBarTheme(context),
+      iconTheme: _iconThemeData(context),
+    );
