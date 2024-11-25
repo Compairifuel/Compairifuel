@@ -14,6 +14,26 @@ final gasStationListProvider = FutureProvider((ref) async {
 
   var response =
       await apiService.get("/gasStations/${pos?.latitude}/${pos?.longitude}");
-  List<Json> list = (jsonDecode(response.body) as List<dynamic>).cast<Json>();
-  return list.map((e) => GasStationModel.fromJson(e));
+  List<GasStationModel> list = (jsonDecode(response.body) as List<dynamic>)
+      .cast<Json>()
+      .map((e) => GasStationModel.fromJson(e))
+      .toList();
+  ref.read(gasStationNotifierProvider.notifier).setGasStations(list);
+  return list;
 });
+
+final gasStationNotifierProvider =
+    NotifierProvider<GasStationNotifier, List<GasStationModel?>>(
+        () => GasStationNotifier());
+
+class GasStationNotifier extends Notifier<List<GasStationModel?>> {
+  @override
+  List<GasStationModel?> build() => [];
+
+  void setGasStations(List<GasStationModel?> gasstations) =>
+      state = gasstations;
+
+  GasStationModel? getGasStationById(String id) {
+    return state.firstWhere((element) => element?.id == id);
+  }
+}
