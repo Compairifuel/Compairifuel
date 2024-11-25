@@ -10,6 +10,7 @@ public class AddressDomain {
     private String countrySubdivision;
     private String countrySubdivisionName;
     private String countrySubdivisionCode;
+    private String countrySecondarySubdivision;
     private String postalCode;
     private String extendedPostalCode;
     private String countryCode;
