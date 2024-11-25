@@ -65,7 +65,8 @@ class ApiService {
       Map<String, String> headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization": "Bearer ${accessToken!.accessToken}",
+        "Authorization":
+            "${accessToken!.tokenType} ${accessToken!.accessToken}",
       };
 
       return await clientInstance.get(uri, headers: headers);
