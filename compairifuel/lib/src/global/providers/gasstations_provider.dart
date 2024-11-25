@@ -17,3 +17,17 @@ final gasStationListProvider = FutureProvider((ref) async {
   List<Json> list = (jsonDecode(response.body) as List<dynamic>).cast<Json>();
   return list.map((e) => GasStationModel.fromJson(e));
 });
+
+final gasStationNotifierProvider =
+    NotifierProvider<GasStationNotifier, List<GasStationModel>>(
+        () => GasStationNotifier());
+
+class GasStationNotifier extends Notifier<List<GasStationModel>> {
+  @override
+  List<GasStationModel> build() => [];
+
+  void setGasStations(List<GasStationModel> gasstations) => state = gasstations;
+
+  GasStationModel getGasStationById(String id) =>
+      state.firstWhere((element) => element.id == id);
+}
