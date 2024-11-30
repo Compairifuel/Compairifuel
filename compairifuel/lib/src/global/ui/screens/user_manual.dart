@@ -16,7 +16,8 @@ class UserManualScreen extends StatelessWidget {
 
     return BaseScreen(
         navBar: const NavBar(),
-        header: Header(title: HeaderTitle(text: localization.usermanualTitle)),
+        header: Header(
+            title: HeaderTitle(text: localization.usermanualHeaderTitle)),
         page: _UserManualPage());
   }
 }
