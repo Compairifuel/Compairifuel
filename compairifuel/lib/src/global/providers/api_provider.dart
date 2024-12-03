@@ -23,10 +23,6 @@ class ApiService {
     try {
       Response response = await clientInstance.get(Uri.parse(
           '$host$prefix/oauth/?response_type=code&state={}&code_challenge=2369850d2ab1338387f111660c108329b2cc66ca5f30e872ef7ca24d79b66347&redirect_uri=$redirectUri'));
-      debugPrint(response.statusCode.toString());
-      debugPrint(response.request.toString());
-      debugPrint(response.isRedirect.toString());
-      debugPrint(response.body.toString());
 
       authorizationCode = (jsonDecode(response.body) as Json)["code"];
 
