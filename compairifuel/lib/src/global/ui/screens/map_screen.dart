@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:compairifuel/src/global/providers/fuel_option_provider.dart';
 import 'package:compairifuel/src/global/providers/gasstations_provider.dart';
@@ -58,16 +59,30 @@ class _MapPageState extends ConsumerState<MapPage> {
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             ),
-            ...[deviceLocation].nonNulls.map((e) => MarkerLayer(markers: [
-                  Marker(point: e, child: const Icon(Icons.accessibility))
-                ])),
+            ...[deviceLocation].nonNulls.map(
+                  (e) => MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: e,
+                        child: const Icon(Icons.accessibility),
+                      ),
+                    ],
+                  ),
+                ),
             if (gasStationList != null && gasStationList.isNotEmpty)
               MarkerLayer(
-                  markers: gasStationList.map((el) {
-                return Marker(
-                    point: el.position.toLatLng(),
-                    child: const Icon(Icons.local_gas_station_sharp));
-              }).toList()),
+                markers: gasStationList.map(
+                  (el) {
+                    return Marker(
+                      point: el.position.toLatLng(),
+                      child: InkWell(
+                        child: const Icon(Icons.local_gas_station_sharp),
+                        onTap: () => context.push("/gasstation/${el.id}"),
+                      ),
+                    );
+                  },
+                ).toList(),
+              ),
             Stack(
               children: [
                 Padding(
