@@ -14,34 +14,32 @@ class BaseScreen extends StatelessWidget {
     ThemeData theme = Theme.of(context);
     TargetPlatform targetPlatform = theme.platform;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      return (targetPlatform == TargetPlatform.iOS ||
-              targetPlatform == TargetPlatform.android ||
-              screenSize.width <= 700)
-          ? Scaffold(
-              body: SafeArea(
-                  child: Column(
-                      children: [
-                header,
-                Expanded(child: page),
-                SafeArea(child: navBar)
-              ].nonNulls.toList())),
-            )
-          : Scaffold(
-              body: Row(
-                children: [
-                  SafeArea(
-                    child: navBar,
-                  ),
-                  Expanded(
-                      child: SafeArea(
-                          child: Column(
-                              children: [header, Expanded(child: page)]
-                                  .nonNulls
-                                  .toList())))
-                ],
-              ),
-            );
-    });
+    return (targetPlatform == TargetPlatform.iOS ||
+            targetPlatform == TargetPlatform.android ||
+            screenSize.width <= 700)
+        ? Scaffold(
+            body: SafeArea(
+                child: Column(
+                    children: [
+              header,
+              Expanded(child: page),
+              SafeArea(child: navBar)
+            ].nonNulls.toList())),
+          )
+        : Scaffold(
+            body: Row(
+              children: [
+                SafeArea(
+                  child: navBar,
+                ),
+                Expanded(
+                    child: SafeArea(
+                        child: Column(
+                            children: [header, Expanded(child: page)]
+                                .nonNulls
+                                .toList())))
+              ],
+            ),
+          );
   }
 }
