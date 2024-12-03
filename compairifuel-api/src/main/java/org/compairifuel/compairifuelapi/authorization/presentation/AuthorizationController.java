@@ -86,6 +86,6 @@ public class AuthorizationController {
     @Path("/callback")
     @Produces(MediaType.APPLICATION_JSON)
     public Response returnCallback(@QueryParam("code") String code, @QueryParam("state") String state){
-        return Response.ok().entity("{\"code\":"+code+",\"state\":"+state+"}").build();
+        return Response.ok().entity("{\"code\":\""+code+"\",\"state\":\""+state+"\"}").build();
     }
 }
