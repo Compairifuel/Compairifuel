@@ -19,14 +19,14 @@ import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 
 import javax.crypto.SecretKey;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 
 @Log(topic = "AuthorizationServiceImpl")
 @Default
 public class AuthorizationServiceImpl implements IAuthorizationService {
     private IEnvConfig envConfig;
     private final String TOKEN_TYPE = "Bearer";
+    private final List<String> WHITELISTED_REDIRECT_URLS = List.of("https://oauth.pstmn.io/v1/callback", "http://localhost:8080/oauth/callback");
 
     @Inject
     public void setEnvConfig(IEnvConfig envConfig) {
@@ -43,7 +43,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
 
         UriBuilder redirectToURI = UriBuilder.fromUri(redirectUri);
 
-        if (!(redirectToURI.clone().replaceQuery("").build().toString().equals("https://oauth.pstmn.io/v1/callback")||redirectToURI.clone().replaceQuery("").build().toString().equals("http://localhost:8080/oauth/callback"))) {
+        if (!(WHITELISTED_REDIRECT_URLS.contains(redirectToURI.clone().replaceQuery("").build().toString()))) {
             log.warning("The redirect url isn't whitelisted!");
             throw new ForbiddenException();
         }
@@ -66,9 +66,9 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
                 .compact();
 
         return redirectToURI
-            .queryParam("state", state)
-            .queryParam("code", authorizationCode)
-            .build();
+                .queryParam("state", state)
+                .queryParam("code", authorizationCode)
+                .build();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
             throw new InternalServerErrorException();
         }
 
-        if (!DigestUtils.sha256Hex(codeVerifier).equals(claims.get("code_challenge", String.class)) ||
+        if (!Arrays.equals(Base64.getUrlDecoder().decode(claims.get("code_challenge", String.class)), DigestUtils.sha256(codeVerifier)) ||
                 !redirectUri.equals(claims.get("redirect_uri", String.class))
         ) {
             log.warning("The code is not the same or the redirect Uri is not the same!");
@@ -169,7 +169,7 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
             throw new InternalServerErrorException();
         }
 
-        if (!DigestUtils.sha256Hex(codeVerifier).equals(claims.get("code_challenge", String.class))) {
+        if (!Arrays.equals(Base64.getUrlDecoder().decode(claims.get("code_challenge", String.class)), DigestUtils.sha256(codeVerifier))) {
             log.warning("The code is not the same or the refresh token is not valid!");
             throw new ForbiddenException();
         }
