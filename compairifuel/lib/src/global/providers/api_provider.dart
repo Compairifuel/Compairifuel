@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:compairifuel/src/global/model/access_token.dart';
 import 'package:compairifuel/src/global/typedefs.dart';
+import 'package:crypto/crypto.dart';
 
 class ApiService {
   ApiService();
@@ -14,21 +16,34 @@ class ApiService {
   AccessTokenModel? accessToken;
   DateTime? expirationDate;
   String? authorizationCode;
-  final String host = "http://localhost:8080";
-  final String prefix = "";
+  final String host = dotenv.get("COMPAIRIFUEL_BACKEND_HOST");
   final String redirectUri = "http://localhost:8080/oauth/callback";
 
   Future<void> _init() async {
     var clientInstance = Client();
     try {
-      Response response = await clientInstance.get(Uri.parse(
-          '$host$prefix/oauth/?response_type=code&state={}&code_challenge=2369850d2ab1338387f111660c108329b2cc66ca5f30e872ef7ca24d79b66347&redirect_uri=$redirectUri'));
+      Response response = await clientInstance.get(
+        Uri.parse(
+            '$host/oauth/?response_type=code&state={}&code_challenge=${base64UrlEncode(sha256.convert(dotenv.get("COMPAIRIFUEL_BACKEND_CODE_VERIFIER").codeUnits).bytes)}&redirect_uri=$redirectUri'),
+      );
 
       authorizationCode = (jsonDecode(response.body) as Json)["code"];
 
-      accessToken = AccessTokenModel.fromJson(jsonDecode(
-          (await clientInstance.post(Uri.parse(
-                  '$host$prefix/oauth/token?grant_type=authorization_code&code=$authorizationCode&code_verifier=YWJjc2Rhc2Rhc2Fkc2Fkc2Fkc2FkZHNhc2Fkc2Fkc2Rhc2Rhc2Fkc2Fkc2Fkc2Fkc2Fkc2Fkc2Fk&redirect_uri=$redirectUri')))
+      accessToken =
+          AccessTokenModel.fromJson(jsonDecode((await clientInstance.post(
+        Uri.parse('$host/oauth/token'),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Accept": "application/json",
+        },
+        body: {
+          "grant_type": "authorization_code",
+          "code": authorizationCode,
+          "state": jsonEncode({}),
+          "code_verifier": dotenv.get("COMPAIRIFUEL_BACKEND_CODE_VERIFIER"),
+          "redirect_uri": redirectUri,
+        },
+      ))
               .body) as Json);
       if (accessToken != null) {
         expirationDate = DateTime.now().add(Duration(
@@ -46,7 +61,7 @@ class ApiService {
     try {
       await authenticate();
 
-      var uri = Uri.parse("$host$prefix$endpoint");
+      var uri = Uri.parse("$host$endpoint");
       Map<String, String> headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -76,7 +91,7 @@ class ApiService {
         if (!isAuthenticated()) {
           accessToken = AccessTokenModel.fromJson(jsonDecode(
               (await clientInstance.post(Uri.parse(
-                      '$host$prefix/oauth/refresh?grant_type=refresh_token&refresh_token=${accessToken!.refreshToken}&code_verifier=YWJjc2Rhc2Rhc2Fkc2Fkc2Fkc2FkZHNhc2Fkc2Fkc2Rhc2Rhc2Fkc2Fkc2Fkc2Fkc2Fkc2Fkc2Fk')))
+                      '$host/oauth/refresh?grant_type=refresh_token&refresh_token=${accessToken!.refreshToken}&code_verifier=${dotenv.get("COMPAIRIFUEL_BACKEND_CODE_VERIFIER")}')))
                   .body) as Json);
         }
       } else {
