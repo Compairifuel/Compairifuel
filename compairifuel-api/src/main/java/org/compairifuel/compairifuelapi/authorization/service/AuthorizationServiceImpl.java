@@ -1,9 +1,6 @@
 package org.compairifuel.compairifuelapi.authorization.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -12,15 +9,17 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.UriBuilder;
+import lombok.Cleanup;
 import lombok.extern.java.Log;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.compairifuel.compairifuelapi.authorization.service.domain.AccessTokenDomain;
 import org.compairifuel.compairifuelapi.utils.IEnvConfig;
 
 import javax.crypto.SecretKey;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 
 @Log(topic = "AuthorizationServiceImpl")
 @Default
@@ -37,32 +36,32 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
     public URI getAuthorizationCode(String grantType, String redirectUri, String codeChallenge, String state) {
         UriBuilder redirectToURI = UriBuilder.fromUri(redirectUri);
 
-        if (!(redirectToURI.clone().replaceQuery("").build().toString().equals("https://oauth.pstmn.io/v1/callback")||redirectToURI.clone().replaceQuery("").build().toString().equals("http://localhost:8080/oauth/callback"))) {
+        boolean isWhitelisted;
+        try {
+            @Cleanup BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("whitelisted_uri.yml"))));
+            isWhitelisted = br.lines().anyMatch((el) -> Objects.equals(el, redirectToURI.clone().replaceQuery("").build().toString()));
+        } catch (Exception e) {
+            throw new InternalServerErrorException(e.getMessage());
+        }
+
+        if (!isWhitelisted) {
             log.warning("The redirect url isn't whitelisted!");
             throw new ForbiddenException();
         }
 
-        String secretKey = envConfig.getEnv("SECRET_KEY");
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
-
         long expiresIn = 36000;
 
-        String authorizationCode = Jwts
-                .builder()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiresIn))
-                .claim("state", state)
-                .claim("code_challenge", codeChallenge)
-                .claim("redirect_uri", redirectUri)
-                .claim("grant_type", grantType)
-                .signWith(key)
-                .compact();
+        var hashMap = new HashMap<String, Object>();
+        hashMap.put("state", state);
+        hashMap.put("code_challenge", codeChallenge);
+        hashMap.put("redirect_uri", redirectUri);
+        hashMap.put("grant_type", grantType);
+        String authorizationCode = createJwtsToken(hashMap, new Date(System.currentTimeMillis() + expiresIn), new Date(System.currentTimeMillis()));
 
         return redirectToURI
-            .queryParam("state", state)
-            .queryParam("code", authorizationCode)
-            .build();
+                .queryParam("state", state)
+                .queryParam("code", authorizationCode)
+                .build();
     }
 
     @Override
@@ -71,27 +70,9 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-        Claims claims;
+        Claims claims = retrieveJwtsClaims(authorizationCode);
 
-        try {
-            claims = Jwts
-                    .parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(authorizationCode)
-                    .getPayload();
-        } catch (SignatureException ex) {
-            log.warning("The token is not valid: " + ex.getMessage());
-            throw new ForbiddenException();
-        } catch (ExpiredJwtException ex) {
-            log.warning("The token has expired: " + ex.getMessage());
-            throw new ForbiddenException();
-        } catch (JwtException ex) {
-            log.severe("An error occured during the Jwts parser: " + ex.getMessage() + " " + ex.getCause() + " " + Arrays.toString(ex.getStackTrace()));
-            throw new InternalServerErrorException();
-        }
-
-        if (!DigestUtils.sha256Hex(codeVerifier).equals(claims.get("code_challenge", String.class)) ||
+        if (!Arrays.equals(Base64.getUrlDecoder().decode(claims.get("code_challenge", String.class)), DigestUtils.sha256(codeVerifier)) ||
                 !redirectUri.equals(claims.get("redirect_uri", String.class))
         ) {
             log.warning("The code is not the same or the redirect Uri is not the same!");
@@ -100,20 +81,11 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
 
         long expiresIn = 3600000;
 
-        String accessToken = Jwts
-                .builder()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiresIn))
-                .signWith(key)
-                .compact();
+        String accessToken = createJwtsToken(new HashMap<>(), new Date(System.currentTimeMillis() + expiresIn), new Date(System.currentTimeMillis()));
 
-        String refreshToken = Jwts
-                .builder()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (expiresIn * 2)))
-                .claim("code_challenge", claims.get("code_challenge", String.class))
-                .signWith(key)
-                .compact();
+        HashMap<String, Object> refreshTokenMap = new HashMap<>();
+        refreshTokenMap.put("code_challenge", claims.get("code_challenge", String.class));
+        String refreshToken = createJwtsToken(refreshTokenMap, new Date(System.currentTimeMillis() + (expiresIn * 2)), new Date(System.currentTimeMillis()));
 
         AccessTokenDomain response = new AccessTokenDomain();
         response.setAccessToken(accessToken);
@@ -130,14 +102,38 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-        Claims claims;
+        Claims claims = retrieveJwtsClaims(refreshToken);
 
+        if (!Arrays.equals(Base64.getUrlDecoder().decode(claims.get("code_challenge", String.class)), DigestUtils.sha256(codeVerifier))) {
+            log.warning("The code is not the same or the refresh token is not valid!");
+            throw new ForbiddenException();
+        }
+
+        long expiresIn = 3600000;
+
+        String accessToken = createJwtsToken(new HashMap<>(), new Date(System.currentTimeMillis() + expiresIn), new Date(System.currentTimeMillis()));
+
+        HashMap<String, Object> refreshTokenMap = new HashMap<>();
+        refreshTokenMap.put("code_challenge", claims.get("code_challenge", String.class));
+        String newRefreshToken = createJwtsToken(refreshTokenMap, new Date(System.currentTimeMillis() + (expiresIn * 2)), new Date(System.currentTimeMillis()));
+
+        AccessTokenDomain response = new AccessTokenDomain();
+        response.setAccessToken(accessToken);
+        response.setExpiresIn(expiresIn);
+        response.setTokenType(TOKEN_TYPE);
+        response.setRefreshToken(newRefreshToken);
+
+        return response;
+    }
+
+    private Claims retrieveJwtsClaims(String JwtToken) {
+        Claims claims;
         try {
             claims = Jwts
                     .parser()
-                    .verifyWith(key)
+                    .verifyWith(getSecretKey())
                     .build()
-                    .parseSignedClaims(refreshToken)
+                    .parseSignedClaims(JwtToken)
                     .getPayload();
         } catch (SignatureException ex) {
             log.warning("The token is not valid: " + ex.getMessage());
@@ -150,34 +146,15 @@ public class AuthorizationServiceImpl implements IAuthorizationService {
             throw new InternalServerErrorException();
         }
 
-        if (!DigestUtils.sha256Hex(codeVerifier).equals(claims.get("code_challenge", String.class))) {
-            log.warning("The code is not the same or the refresh token is not valid!");
-            throw new ForbiddenException();
-        }
+        return claims;
+    }
+    private String createJwtsToken(HashMap<String, Object> claims, Date expiration, Date issuedAt) {
+        return Jwts.builder().claims(claims).signWith(getSecretKey()).expiration(expiration).issuedAt(issuedAt).compact();
+    }
 
-        long expiresIn = 3600000;
-
-        String accessToken = Jwts
-                .builder()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiresIn))
-                .signWith(key)
-                .compact();
-
-        String newRefreshToken = Jwts
-                .builder()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + (expiresIn * 2)))
-                .claim("code_challenge", claims.get("code_challenge", String.class))
-                .signWith(key)
-                .compact();
-
-        AccessTokenDomain response = new AccessTokenDomain();
-        response.setAccessToken(accessToken);
-        response.setExpiresIn(expiresIn);
-        response.setTokenType(TOKEN_TYPE);
-        response.setRefreshToken(newRefreshToken);
-
-        return response;
+    private SecretKey getSecretKey() {
+        String secretKey = envConfig.getEnv("SECRET_KEY");
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }
