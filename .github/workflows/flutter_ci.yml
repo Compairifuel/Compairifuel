@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        flutter: [ '3.24.3', '' ]
+        flutter: [ '3.32.5', '' ]
     steps:
       - uses: actions/checkout@v4
       - name: Flutter install ${{ matrix.flutter }}
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        flutter: [ '3.24.3', '' ]
+        flutter: [ '3.32.5', '' ]
     steps:
       - uses: actions/checkout@v4
       - name: Flutter install ${{ matrix.flutter }}
