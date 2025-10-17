@@ -59,10 +59,7 @@ class _MapPageState extends ConsumerState<MapPage> {
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               tileProvider: NetworkTileProvider(
-                headers: {
-                  "User-Agent": "Compairifuel/1.0"
-                }
-              ),
+                  headers: {"User-Agent": "Compairifuel/1.0"}),
             ),
             ...[deviceLocation].nonNulls.map(
                   (e) => MarkerLayer(
