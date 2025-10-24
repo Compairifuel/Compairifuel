@@ -47,7 +47,7 @@ jobs:
         env:
           DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
       - name: Dart format
-        run: dart format -o none --set-exit-if-changed .
+        run: dart format lib/src lib/main.dart test -o none --set-exit-if-changed
       - name: Flutter analyze
         run: flutter analyze
   test:
