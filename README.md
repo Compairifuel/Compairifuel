@@ -27,4 +27,4 @@ After installing FVM, run the following command in the project directory to inst
 fvm install
 ```
 
-For more information on using Flutter and FVM with this project, refer to the [Compairifuel Wiki Flutter Page](https://github.com/Compairifuel/Compairifuel/wiki/Flutter).
+For more information on using Flutter and FVM with this project, refer to the [Compairifuel Flutter Guide](./docs/Flutter.md).
