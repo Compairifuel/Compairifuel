@@ -1,4 +1,4 @@
-# Flutter
+# Flutter Version Management
 
 ## Deleting the global Flutter SDK
 
@@ -61,3 +61,13 @@ This will install the Flutter SDK and Dart within the project. The Flutter and D
 fvm flutter
 fvm dart
 ```
+
+## Switching Flutter versions using Flutter Version Manager (FVM)
+
+To switch between different Flutter versions using FVM, you can use the following command:
+
+```bash
+fvm use <version> --force
+```
+
+Other users can then install the new flutter version. See [Installing Flutter](#installing-flutter) for more information.
