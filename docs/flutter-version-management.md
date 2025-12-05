@@ -53,6 +53,12 @@ To install FVM, follow the instructions on the [FVM Installation Guide](https://
 
 ### Installing Flutter
 
+Before you install Flutter using FVM, ensure that you are in the root directory of the project where the `.fvmrc` file is located.
+
+```bash
+cd path/to/project
+```
+
 To install the correct Flutter version for this project, run the command below and wait for FVM to install the Flutter SDK.
 
 ```bash
