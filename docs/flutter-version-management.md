@@ -43,6 +43,10 @@ fvm --version
 This command should return a version number like shown below.
 If this is not the case, you will need to install FVM.
 
+```
+4.0.2
+```
+
 ### Installing FVM
 
 To install FVM, follow the instructions on the [FVM Installation Guide](https://fvm.app/documentation/getting-started/installation).
