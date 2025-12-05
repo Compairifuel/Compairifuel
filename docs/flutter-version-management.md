@@ -80,4 +80,4 @@ To switch between different Flutter versions using FVM, you can use the followin
 fvm use <version> --force
 ```
 
-Other users can then install the new flutter version. See [Installing Flutter](#installing-flutter) for more information.
+The .fvmrc file updates to the newly selected version when running the command above, therefore other users can then install the same flutter version. See [Installing Flutter](#installing-flutter) for more information.
