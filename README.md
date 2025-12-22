@@ -27,4 +27,11 @@ After installing FVM, run the following command in the project directory to inst
 fvm install
 ```
 
+This will install the Flutter SDK and Dart within the project. The version that gets installed is determined by the flutter version specified in the `.fvmrc` file. The Flutter and Dart CLI can then be used using their FVM proxies:
+
+```bash
+fvm flutter
+fvm dart
+```
+
 For more information on using Flutter and FVM with this project, refer to the [Compairifuel Flutter Version Management Guide](./docs/Flutter.md).

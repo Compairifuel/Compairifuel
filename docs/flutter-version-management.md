@@ -65,7 +65,7 @@ To install the correct Flutter version for this project, run the command below a
 fvm install
 ```
 
-This will install the Flutter SDK and Dart within the project. The Flutter and Dart CLI can then be used using their FVM proxies:
+This will install the Flutter SDK and Dart within the project. The version that gets installed is determined by the flutter version specified in the `.fvmrc` file. The Flutter and Dart CLI can then be used using their FVM proxies:
 
 ```bash
 fvm flutter
