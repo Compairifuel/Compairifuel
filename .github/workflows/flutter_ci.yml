@@ -57,6 +57,8 @@ jobs:
         flutter: [ '3.32.5', '' ]
     steps:
       - uses: actions/checkout@v4
+      - name: Install lcov
+        run: sudo apt-get install lcov
       - name: Flutter install ${{ matrix.flutter }}
         if: matrix.flutter != ''
         uses: subosito/flutter-action@v2
@@ -85,3 +87,10 @@ jobs:
           DOTENV_BASE64: ${{ env.DOTENV_BASE64 }}
       - name: Flutter test
         run: flutter test --coverage --reporter github --exclude-tags integration
+      - name: Generate HTML report
+        run: genhtml -o coverage coverage/lcov.info > output.txt
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report-${{ matrix.flutter || 'latest' }}
+          path: coverage/
